@@ -689,6 +689,19 @@
       color: var(--muted);
     }
 
+  
+    sub, sup {
+      font-size: 0.74em;
+      line-height: 0;
+      position: relative;
+      vertical-align: baseline;
+    }
+    sup { top: -0.45em; }
+    sub { bottom: -0.22em; }
+    .q-text {
+      white-space: normal;
+    }
+
   </style>
 </head>
 <body>
@@ -1044,10 +1057,12 @@
           type: q.type || (Array.isArray(q.items) ? "true_false" : (Array.isArray(q.options) ? "mcq" : "essay")),
           question: String(q.question || ""),
           options: Array.isArray(q.options) ? q.options : [],
-          items: Array.isArray(q.items) ? q.items.map((it, j) => ({
-            key: String(it.key || ["a", "b", "c", "d"][j] || String(j + 1)),
-            text: String(it.text || it.statement || it.question || "")
-          })) : [],
+          items: Array.isArray(q.items) && q.items.length
+            ? q.items.map((it, j) => ({
+                key: String(it.key || ["a", "b", "c", "d"][j] || String(j + 1)),
+                text: String(it.text || it.statement || it.question || "")
+              }))
+            : ((q.type === "true_false" || q.type === "tf") ? parseStatementsFromQuestion(q.question) : []),
           placeholder: q.placeholder || ""
         })),
         dap_an_giai_thich: raw.dap_an_giai_thich && typeof raw.dap_an_giai_thich === "object"
@@ -1442,7 +1457,7 @@
         <div style="font-weight:750; color:var(--green-bright); margin-bottom:8px;">Lý thuyết</div>
         ${exam.ly_thuyet.map(item => `
           <div style="margin-bottom:8px;">
-            <b>${escapeHtml(item.heading || "Mục")}:</b> ${escapeHtml(item.content || "")}
+            <b>${formatScientificHtml(item.heading || "Mục")}:</b> ${formatScientificHtml(item.content || "")}
           </div>
         `).join("")}
       `;
@@ -1536,14 +1551,14 @@
 
           return `
             <div class="tf-row">
-              <div class="tf-stmt"><b>${escapeHtml(k)})</b> ${escapeHtml(it.text)}</div>
+              <div class="tf-stmt"><b>${escapeHtml(k)})</b> ${formatScientificHtml(it.text)}</div>
               <div class="tf-actions">
                 <button type="button" class="${getChoiceCls("Đúng")}" data-tf-key="${escapeAttr(k)}" data-tf-val="Đúng">Đúng</button>
                 <button type="button" class="${getChoiceCls("Sai")}" data-tf-key="${escapeAttr(k)}" data-tf-val="Sai">Sai</button>
               </div>
               ${(state.submitted && (rVal || itemExp)) ? `
                 <div class="tf-item-exp">
-                  Đáp án ý ${escapeHtml(k)}: <b>${escapeHtml(rVal || "—")}</b>${itemExp ? ` — ${escapeHtml(itemExp)}` : ""}
+                  Đáp án ý ${escapeHtml(k)}: <b>${escapeHtml(rVal || "—")}</b>${itemExp ? ` — ${formatScientificHtml(itemExp)}` : ""}
                 </div>
               ` : ""}
             </div>
@@ -1579,12 +1594,12 @@
               ${isFlagged ? "Đã gắn cờ" : "Gắn cờ"}
             </button>
           </div>
-          <div class="q-text">${escapeHtml(q.question)}</div>
+          <div class="q-text">${formatScientificHtml(q.question)}</div>
           ${inputHtml}
           ${showSol ? `
             <div class="explanation-box">
-              <div><b>Đáp án:</b> ${escapeHtml(sol.answer || "—")}</div>
-              <div style="margin-top:4px;"><b>Giải thích chi tiết:</b> ${escapeHtml(sol.explanation || "Chưa có giải thích.")}</div>
+              <div><b>Đáp án:</b> ${formatScientificHtml(sol.answer || "—")}</div>
+              <div style="margin-top:4px;"><b>Giải thích chi tiết:</b> ${formatScientificHtml(sol.explanation || "Chưa có giải thích.")}</div>
             </div>
           ` : ""}
           <div class="note-box">
@@ -1922,6 +1937,33 @@
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;");
+    }
+
+
+    function formatScientificHtml(str) {
+      let s = escapeHtml(str ?? "");
+      // Xuống dòng sau phần mở đầu "Câu số. (Nguồn)..." nếu có câu hỏi/mệnh đề tiếp theo
+      s = s.replace(/^(Câu\s+\d+\.[^.!?\n]*[\.:\?])\s+/i, "$1<br>")
+      // Chuyển ký tự xuống dòng thành <br>
+      s = s.replace(/\r?\n/g, "<br>");
+      // Chỉ số dưới phổ biến trong Vật lý / Toán: L_c, L_m, t_nc, t_s, c_đá, c_nước, c_Cu, c_Fe, R_td, t0, t1, t2, tx, τ1, τ2, m1, m2
+      s = s.replace(/\b([LtcmRτ])_([a-zA-Z0-9đáướcCuFe]+)\b/g, "$1<sub>$2</sub>");
+      s = s.replace(/\b(t|τ|m)([012x])\b/g, "$1<sub>$2</sub>");
+      // Số mũ dạng 10^5, 10^3, 10^6, x^2
+      s = s.replace(/([0-9a-zA-Z\)\]]+)\^([+-]?[0-9a-zA-Z]+)/g, "$1<sup>$2</sup>");
+      return s;
+    }
+
+    function parseStatementsFromQuestion(qText) {
+      const text = String(qText || "");
+      const matches = [...text.matchAll(/(?:^|[\s\(])([a-d])[\)\.:]\s*([\s\S]*?)(?=(?:[\s\(][a-d][\)\.:]\s)|$)/gi)];
+      if (matches.length >= 2) {
+        return matches.map(m => ({
+          key: m[1].toLowerCase(),
+          text: m[2].trim()
+        }));
+      }
+      return [];
     }
 
     function escapeAttr(str) {
