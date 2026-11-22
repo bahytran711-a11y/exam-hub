@@ -1942,8 +1942,8 @@
 
     function formatScientificHtml(str) {
       let s = escapeHtml(str ?? "");
-      // Xuống dòng sau phần mở đầu "Câu số. (Nguồn)..." nếu có câu hỏi/mệnh đề tiếp theo
-      s = s.replace(/^(Câu\s+\d+\.[^.!?\n]*[\.:\?])\s+/i, "$1<br>")
+      // Tách phần đầu "Câu số." (kèm nguồn trong ngoặc nếu có) xuống 1 dòng riêng
+      s = s.replace(/^(Câu\s+\d+[\.:]?\s*(?:\([^)]*\)|\[[^\]]*\])?[\.:]?)\s+/i, "$1<br>");
       // Chuyển ký tự xuống dòng thành <br>
       s = s.replace(/\r?\n/g, "<br>");
       // Chỉ số dưới phổ biến trong Vật lý / Toán: L_c, L_m, t_nc, t_s, c_đá, c_nước, c_Cu, c_Fe, R_td, t0, t1, t2, tx, τ1, τ2, m1, m2
