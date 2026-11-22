@@ -163,6 +163,22 @@
       border-color: var(--green-border);
     }
 
+    button.danger-ghost {
+      background: transparent;
+      color: var(--muted);
+      border-color: transparent;
+      padding: 4px 8px;
+      font-size: 0.76rem;
+      border-radius: 7px;
+      flex-shrink: 0;
+    }
+
+    button.danger-ghost:hover {
+      background: var(--danger-bg);
+      color: var(--danger);
+      border-color: rgba(248, 113, 113, 0.3);
+    }
+
     button.active-pill {
       background: var(--green);
       color: #052e16;
@@ -282,6 +298,10 @@
       border-radius: 11px;
       padding: 10px 12px;
       cursor: pointer;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
       transition: border-color 0.14s ease, background-color 0.14s ease;
     }
 
@@ -294,6 +314,11 @@
       border-color: var(--green);
       background: rgba(34, 197, 94, 0.13);
       box-shadow: inset 3px 0 0 var(--green);
+    }
+
+    .exam-item-main {
+      min-width: 0;
+      flex: 1;
     }
 
     .exam-item-title {
@@ -688,8 +713,8 @@
         <span>Dán JSON đề bài tập (3 phần)</span>
         <button type="button" class="secondary" style="padding:4px 9px;" onclick="closeModal('pasteModal')">✕</button>
       </div>
-      <p class="muted">Thứ tự chuẩn: <code>ly_thuyet</code> → <code>bai_tap</code> (không đáp án) → <code>dap_an_giai_thich</code>.</p>
-      <textarea id="pasteJsonTextarea" rows="11" placeholder='{"id":"ly-01","title":"...","subject":"Lý","ly_thuyet":[...],"bai_tap":[...],"dap_an_giai_thich":{...}}'></textarea>
+      <p class="muted">Thứ tự chuẩn: <code>ly_thuyet</code> → <code>bai_tap</code> (không đáp án) → <code>dap_an_giai_thich</code> (<code>ly_thuyet</code> có thể để trống).</p>
+      <textarea id="pasteJsonTextarea" rows="11" placeholder='{"id":"ly-01","title":"...","subject":"Lý","ly_thuyet":[],"bai_tap":[...],"dap_an_giai_thich":{...}}'></textarea>
       <div style="margin-top:12px; display:flex; justify-content:flex-end; gap:8px;">
         <button type="button" class="secondary" onclick="closeModal('pasteModal')">Hủy</button>
         <button type="button" id="btnConfirmPaste">Lưu vào kho đề</button>
@@ -796,12 +821,7 @@
         id: "sample-toan-01",
         title: "Bài tập Hàm số & Biến đổi nhanh",
         subject: "Toán",
-        ly_thuyet: [
-          {
-            heading: "Tính đơn điệu của hàm số",
-            content: "Hàm số đồng biến trên khoảng K nếu với mọi x1 < x2 thuộc K thì f(x1) < f(x2)."
-          }
-        ],
+        ly_thuyet: [],
         bai_tap: [
           {
             id: "q1",
@@ -831,12 +851,7 @@
         id: "sample-anh-01",
         title: "Academic Collocations & Usage Drill",
         subject: "Anh",
-        ly_thuyet: [
-          {
-            heading: "Cause & Effect Collocations",
-            content: "Dùng 'mitigate the impact' trong văn nghị luận học thuật."
-          }
-        ],
+        ly_thuyet: [],
         bai_tap: [
           {
             id: "q1",
@@ -855,12 +870,12 @@
     ];
 
     const KEYS = {
-      EXAMS: "exam_hub_v3_exams",
-      HISTORY: "exam_hub_v3_history",
-      NOTES: "exam_hub_v3_notes",
-      GIST_CFG: "exam_hub_v3_gist_cfg",
-      ACTIVE_ID: "exam_hub_v3_active_id",
-      UPDATED_AT: "exam_hub_v3_updated_at"
+      EXAMS: "exam_hub_v4_exams",
+      HISTORY: "exam_hub_v4_history",
+      NOTES: "exam_hub_v4_notes",
+      GIST_CFG: "exam_hub_v4_gist_cfg",
+      ACTIVE_ID: "exam_hub_v4_active_id",
+      UPDATED_AT: "exam_hub_v4_updated_at"
     };
 
     function loadJson(key, fallback) {
@@ -909,7 +924,8 @@
       saveJson(KEYS.EXAMS, state.exams);
     }
     if (!state.activeExamId || !state.exams.some(e => e.id === state.activeExamId)) {
-      state.activeExamId = state.exams[0].id;
+      state.activeExamId = state.exams[0]?.id || null;
+      saveJson(KEYS.ACTIVE_ID, state.activeExamId);
     }
 
     function showToast(msg) {
@@ -972,8 +988,37 @@
       showToast(`Đã lưu: ${exam.title}`);
     }
 
+    function deleteExam(examId) {
+      const target = state.exams.find(e => e.id === examId);
+      if (!target) return;
+      if (!confirm(`Xóa đề "${target.title}"? Lịch sử và ghi chú của đề này cũng sẽ bị xóa.`)) return;
+
+      state.exams = state.exams.filter(e => e.id !== examId);
+      delete state.history[examId];
+      delete state.notes[examId];
+
+      saveJson(KEYS.EXAMS, state.exams);
+      saveJson(KEYS.HISTORY, state.history);
+      saveJson(KEYS.NOTES, state.notes);
+      state.updatedAt = touchUpdatedAt();
+
+      if (state.selectedSubject !== "All") {
+        const stillHas = state.exams.some(e => normalizeSubject(e.subject) === state.selectedSubject);
+        if (!stillHas) state.selectedSubject = "All";
+      }
+
+      if (state.activeExamId === examId) {
+        state.activeExamId = state.exams[0]?.id || null;
+        saveJson(KEYS.ACTIVE_ID, state.activeExamId);
+        resetAttempt();
+      }
+
+      renderAll();
+      showToast(`Đã xóa: ${target.title}`);
+    }
+
     function getCurrentExam() {
-      return state.exams.find(e => e.id === state.activeExamId) || state.exams[0];
+      return state.exams.find(e => e.id === state.activeExamId) || null;
     }
 
     function getFilteredExams() {
@@ -1029,6 +1074,8 @@
 
     function evaluateAnswers() {
       const exam = getCurrentExam();
+      if (!exam) return { correctCount: 0, autoCount: 0, score10: "—", wrongNumbers: [], grading: {} };
+
       const solMap = exam.dap_an_giai_thich || {};
       let autoCount = 0;
       let correctCount = 0;
@@ -1065,6 +1112,8 @@
 
     function submitExam() {
       const exam = getCurrentExam();
+      if (!exam) return;
+
       const res = evaluateAnswers();
       state.submitted = true;
       state.lastGrading = res.grading;
@@ -1132,7 +1181,7 @@
       listEl.innerHTML = "";
 
       if (!filtered.length) {
-        listEl.innerHTML = `<div class="muted">Chưa có đề nào cho môn "${escapeHtml(state.selectedSubject)}".</div>`;
+        listEl.innerHTML = `<div class="muted">Chưa có đề nào trong mục này.</div>`;
         return;
       }
 
@@ -1142,10 +1191,17 @@
         const div = document.createElement("div");
         div.className = "exam-item" + (ex.id === state.activeExamId ? " selected" : "");
         div.innerHTML = `
-          <div class="exam-item-title">${escapeHtml(ex.title)}</div>
-          <div class="exam-item-meta">${escapeHtml(normalizeSubject(ex.subject))} • ${ex.bai_tap.length} câu • Gần nhất: ${latest}</div>
+          <div class="exam-item-main">
+            <div class="exam-item-title">${escapeHtml(ex.title)}</div>
+            <div class="exam-item-meta">${escapeHtml(normalizeSubject(ex.subject))} • ${ex.bai_tap.length} câu • Gần nhất: ${latest}</div>
+          </div>
+          <button type="button" class="danger-ghost" title="Xóa đề này" aria-label="Xóa đề này">Xóa</button>
         `;
         div.onclick = () => selectExam(ex.id);
+        div.querySelector(".danger-ghost").onclick = (ev) => {
+          ev.stopPropagation();
+          deleteExam(ex.id);
+        };
         listEl.appendChild(div);
       });
     }
@@ -1153,6 +1209,11 @@
     function renderHistory() {
       const exam = getCurrentExam();
       const box = document.getElementById("historyContainer");
+      if (!exam) {
+        box.innerHTML = `<span class="muted">Chưa có đề nào để hiển thị lịch sử.</span>`;
+        return;
+      }
+
       const rows = state.history[exam.id] || [];
       if (!rows.length) {
         box.innerHTML = `<span class="muted">Chưa có lượt làm bài cho đề này.</span>`;
@@ -1185,13 +1246,13 @@
     function renderTheory() {
       const exam = getCurrentExam();
       const box = document.getElementById("theoryBox");
-      if (!state.showTheory) {
+      if (!exam || !state.showTheory) {
         box.style.display = "none";
         return;
       }
       box.style.display = "block";
       if (!exam.ly_thuyet?.length) {
-        box.innerHTML = `<span class="muted">Không có phần lý thuyết cho đề này.</span>`;
+        box.innerHTML = `<span class="muted">Đề này không có phần lý thuyết.</span>`;
         return;
       }
       box.innerHTML = `
@@ -1209,6 +1270,7 @@
       const qs = getOrderedQuestions();
       const nav = document.getElementById("questionNav");
       nav.innerHTML = "";
+      if (!exam) return;
       if (state.currentIndex >= qs.length) state.currentIndex = Math.max(0, qs.length - 1);
 
       qs.forEach((q, idx) => {
@@ -1237,6 +1299,13 @@
       const exam = getCurrentExam();
       const qs = getOrderedQuestions();
       const area = document.getElementById("questionArea");
+
+      if (!exam) {
+        document.getElementById("currentExamTitle").textContent = "Kho đề đang trống";
+        document.getElementById("currentExamMeta").textContent = "";
+        area.innerHTML = `<p class="muted">Bấm <b>Nạp JSON</b> hoặc <b>Dán JSON</b> ở thanh trên để thêm bài tập mới.</p>`;
+        return;
+      }
 
       document.getElementById("currentExamTitle").textContent = exam.title;
       document.getElementById("currentExamMeta").textContent = `${normalizeSubject(exam.subject)} • ${exam.bai_tap.length} câu`;
@@ -1395,6 +1464,7 @@
       saveJson(KEYS.NOTES, state.notes);
       saveJson(KEYS.UPDATED_AT, state.updatedAt);
       state.activeExamId = state.exams[0]?.id || null;
+      saveJson(KEYS.ACTIVE_ID, state.activeExamId);
       resetAttempt();
       renderAll();
     }
@@ -1533,6 +1603,7 @@
 
     document.getElementById("btnShuffle").onclick = () => {
       const exam = getCurrentExam();
+      if (!exam) return;
       const ids = exam.bai_tap.map(q => q.id);
       for (let i = ids.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -1556,6 +1627,7 @@
     };
 
     document.getElementById("btnNewAttempt").onclick = () => {
+      if (!getCurrentExam()) return;
       resetAttempt();
       renderQuestionNav();
       renderQuestionArea();
