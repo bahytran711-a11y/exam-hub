@@ -613,6 +613,82 @@
       opacity: 1;
       transform: translateY(0);
     }
+  
+    .tf-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .tf-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      padding: 11px 14px;
+    }
+
+    .tf-stmt {
+      flex: 1 1 320px;
+      font-size: 0.96rem;
+      color: var(--ink);
+    }
+
+    .tf-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .tf-btn {
+      padding: 6px 14px;
+      font-size: 0.84rem;
+      border-radius: 9px;
+      background: var(--bg-elevated);
+      color: var(--ink);
+      border: 1px solid var(--border);
+      min-width: 72px;
+    }
+
+    .tf-btn:hover {
+      background: var(--card-bg-2);
+      border-color: var(--green-border);
+    }
+
+    .tf-btn.selected {
+      background: rgba(34, 197, 94, 0.2);
+      border-color: var(--green);
+      color: var(--green-bright);
+      font-weight: 700;
+    }
+
+    .tf-btn.is-correct {
+      background: rgba(34, 197, 94, 0.28);
+      border-color: var(--green);
+      color: #86efac;
+      font-weight: 750;
+    }
+
+    .tf-btn.is-wrong {
+      background: var(--danger-bg);
+      border-color: var(--danger);
+      color: var(--danger);
+      font-weight: 750;
+    }
+
+    .tf-item-exp {
+      flex-basis: 100%;
+      margin-top: 4px;
+      padding-top: 8px;
+      border-top: 1px dashed var(--border);
+      font-size: 0.86rem;
+      color: var(--muted);
+    }
+
   </style>
 </head>
 <body>
@@ -965,9 +1041,13 @@
         ly_thuyet: Array.isArray(raw.ly_thuyet) ? raw.ly_thuyet : [],
         bai_tap: raw.bai_tap.map((q, idx) => ({
           id: String(q.id || `q${idx + 1}`),
-          type: q.type || (Array.isArray(q.options) ? "mcq" : "essay"),
+          type: q.type || (Array.isArray(q.items) ? "true_false" : (Array.isArray(q.options) ? "mcq" : "essay")),
           question: String(q.question || ""),
           options: Array.isArray(q.options) ? q.options : [],
+          items: Array.isArray(q.items) ? q.items.map((it, j) => ({
+            key: String(it.key || ["a", "b", "c", "d"][j] || String(j + 1)),
+            text: String(it.text || it.statement || it.question || "")
+          })) : [],
           placeholder: q.placeholder || ""
         })),
         dap_an_giai_thich: raw.dap_an_giai_thich && typeof raw.dap_an_giai_thich === "object"
@@ -1072,6 +1152,58 @@
       }
     }
 
+    
+    function normalizeTfChoice(val) {
+      if (val === true) return "Đúng";
+      if (val === false) return "Sai";
+      const s = String(val ?? "").trim().toLowerCase();
+      if (s === "đúng" || s === "dung" || s === "đ" || s === "d" || s === "true" || s === "t") return "Đúng";
+      if (s === "sai" || s === "s" || s === "false" || s === "f") return "Sai";
+      return "";
+    }
+
+    function getTfAnswerMap(q, sol) {
+      const out = {};
+      const items = Array.isArray(q.items) ? q.items : [];
+      const keys = items.length ? items.map(it => it.key) : ["a", "b", "c", "d"];
+
+      if (sol && typeof sol.answers === "object" && sol.answers !== null) {
+        for (const k of keys) {
+          const norm = normalizeTfChoice(sol.answers[k]);
+          if (norm) out[k] = norm;
+        }
+      }
+
+      if (Object.keys(out).length < keys.length && sol && typeof sol.answer === "string") {
+        const str = sol.answer;
+        for (const k of keys) {
+          if (out[k]) continue;
+          const re = new RegExp(`(?:^|[^a-zA-Z0-9])` + k + `[\)\.:\s-]+(đúng|dung|sai|đ|s|true|false)`, "i");
+          const m = str.match(re);
+          if (m) {
+            const norm = normalizeTfChoice(m[1]);
+            if (norm) out[k] = norm;
+          }
+        }
+        if (Object.keys(out).length === 0) {
+          const tokens = str.match(/\b(đúng|dung|sai|đ|s|true|false)\b/gi) || [];
+          keys.forEach((k, i) => {
+            const norm = normalizeTfChoice(tokens[i]);
+            if (norm) out[k] = norm;
+          });
+        }
+      }
+      return out;
+    }
+
+    function calcTfPoints(rightCount) {
+      if (rightCount === 4) return 1.0;
+      if (rightCount === 3) return 0.5;
+      if (rightCount === 2) return 0.25;
+      if (rightCount === 1) return 0.1;
+      return 0;
+    }
+
     function evaluateAnswers() {
       const exam = getCurrentExam();
       if (!exam) return { correctCount: 0, autoCount: 0, score10: "—", wrongNumbers: [], grading: {} };
@@ -1082,11 +1214,57 @@
       const wrongNumbers = [];
       const grading = {};
 
+      let totalPoints = 0;
+      let maxPoints = 0;
+
       exam.bai_tap.forEach((q, idx) => {
         const qNum = idx + 1;
         const sol = solMap[q.id] || {};
         const rightAns = (sol.answer || "").trim();
-        const userAns = (state.answers[q.id] || "").trim();
+        const rawUserAns = state.answers[q.id];
+
+        if (q.type === "true_false" || q.type === "tf") {
+          const ansMap = typeof rawUserAns === "object" && rawUserAns !== null ? rawUserAns : {};
+          const expectedMap = getTfAnswerMap(q, sol);
+          const items = Array.isArray(q.items) && q.items.length
+            ? q.items
+            : Object.keys(expectedMap).map(k => ({ key: k, text: "" }));
+
+          autoCount += 1;
+          maxPoints += 1.0;
+
+          let subRight = 0;
+          const subResults = {};
+          items.forEach(it => {
+            const k = it.key;
+            const uChoice = normalizeTfChoice(ansMap[k]);
+            const rChoice = expectedMap[k] || "";
+            const ok = uChoice !== "" && rChoice !== "" && uChoice === rChoice;
+            if (ok) subRight += 1;
+            subResults[k] = { userChoice: uChoice, rightChoice: rChoice, isCorrect: ok };
+          });
+
+          const pts = calcTfPoints(subRight);
+          totalPoints += pts;
+          const allCorrect = items.length > 0 && subRight === items.length;
+          if (allCorrect) correctCount += 1;
+          else wrongNumbers.push(qNum);
+
+          const summaryAns = rightAns || items.map(it => `${it.key}) ${expectedMap[it.key] || "?"}`).join(" | ");
+          grading[q.id] = {
+            type: "true_false",
+            userAns: ansMap,
+            rightAns: summaryAns,
+            subRight,
+            subTotal: items.length,
+            points: pts,
+            subResults,
+            isCorrect: allCorrect
+          };
+          return;
+        }
+
+        const userAns = typeof rawUserAns === "string" ? rawUserAns.trim() : "";
 
         if (q.type === "essay") {
           grading[q.id] = { type: "essay", userAns, rightAns, isCorrect: null };
@@ -1094,20 +1272,25 @@
         }
 
         autoCount += 1;
+        maxPoints += 1.0;
         const normU = userAns.toLowerCase().replace(",", ".").replace(/\s+/g, " ");
         const normR = rightAns.toLowerCase().replace(",", ".").replace(/\s+/g, " ");
         const isCorrect =
           normU.length > 0 &&
           (normU === normR || (q.type === "mcq" && normR.startsWith(normU.charAt(0) + ".")));
 
-        if (isCorrect) correctCount += 1;
-        else wrongNumbers.push(qNum);
+        if (isCorrect) {
+          correctCount += 1;
+          totalPoints += 1.0;
+        } else {
+          wrongNumbers.push(qNum);
+        }
 
         grading[q.id] = { type: q.type, userAns, rightAns, isCorrect };
       });
 
-      const score10 = autoCount > 0 ? ((correctCount / autoCount) * 10).toFixed(2) : "—";
-      return { correctCount, autoCount, score10, wrongNumbers, grading };
+      const score10 = maxPoints > 0 ? ((totalPoints / maxPoints) * 10).toFixed(2) : "—";
+      return { correctCount, autoCount, score10, wrongNumbers, grading, totalPoints, maxPoints };
     }
 
     function submitExam() {
@@ -1280,7 +1463,11 @@
         btn.className = "q-pill";
         btn.textContent = String(num);
         if (idx === state.currentIndex) btn.classList.add("current");
-        if (state.answers[q.id]) btn.classList.add("answered");
+        const ansVal = state.answers[q.id];
+        const hasAns = typeof ansVal === "object" && ansVal !== null
+          ? Object.values(ansVal).some(v => !!v)
+          : !!ansVal;
+        if (hasAns) btn.classList.add("answered");
         if (state.flagged[q.id]) btn.classList.add("flagged");
         if (state.lastGrading?.[q.id]) {
           if (state.lastGrading[q.id].isCorrect === true) btn.classList.add("correct");
@@ -1323,7 +1510,46 @@
       const showSol = state.submitted && sol;
 
       let inputHtml = "";
-      if (q.type === "mcq") {
+      if (q.type === "true_false" || q.type === "tf") {
+        const ansMap = typeof state.answers[q.id] === "object" && state.answers[q.id] !== null ? state.answers[q.id] : {};
+        const expectedMap = sol ? getTfAnswerMap(q, sol) : {};
+        const subExpMap = (sol && typeof sol.item_explanations === "object" && sol.item_explanations !== null) ? sol.item_explanations : {};
+        const items = Array.isArray(q.items) && q.items.length
+          ? q.items
+          : ["a", "b", "c", "d"].map(k => ({ key: k, text: `Ý ${k})` }));
+
+        inputHtml = `<div class="tf-list">` + items.map(it => {
+          const k = it.key;
+          const uVal = normalizeTfChoice(ansMap[k]);
+          const rVal = expectedMap[k] || "";
+          const itemExp = subExpMap[k] || "";
+
+          const getChoiceCls = (choiceLabel) => {
+            let c = "tf-btn";
+            if (uVal === choiceLabel) c += " selected";
+            if (state.submitted && rVal) {
+              if (rVal === choiceLabel) c += " is-correct";
+              else if (uVal === choiceLabel) c += " is-wrong";
+            }
+            return c;
+          };
+
+          return `
+            <div class="tf-row">
+              <div class="tf-stmt"><b>${escapeHtml(k)})</b> ${escapeHtml(it.text)}</div>
+              <div class="tf-actions">
+                <button type="button" class="${getChoiceCls("Đúng")}" data-tf-key="${escapeAttr(k)}" data-tf-val="Đúng">Đúng</button>
+                <button type="button" class="${getChoiceCls("Sai")}" data-tf-key="${escapeAttr(k)}" data-tf-val="Sai">Sai</button>
+              </div>
+              ${(state.submitted && (rVal || itemExp)) ? `
+                <div class="tf-item-exp">
+                  Đáp án ý ${escapeHtml(k)}: <b>${escapeHtml(rVal || "—")}</b>${itemExp ? ` — ${escapeHtml(itemExp)}` : ""}
+                </div>
+              ` : ""}
+            </div>
+          `;
+        }).join("") + `</div>`;
+      } else if (q.type === "mcq") {
         const opts = state.shuffledOptions[q.id] || q.options || [];
         inputHtml = `<div class="options">` + opts.map((opt, i) => {
           let cls = "option-btn";
@@ -1367,6 +1593,18 @@
           </div>
         </div>
       `;
+
+      area.querySelectorAll(".tf-btn").forEach(btn => {
+        btn.onclick = () => {
+          const k = btn.getAttribute("data-tf-key");
+          const v = btn.getAttribute("data-tf-val");
+          const prev = typeof state.answers[q.id] === "object" && state.answers[q.id] !== null ? { ...state.answers[q.id] } : {};
+          prev[k] = prev[k] === v ? "" : v;
+          state.answers[q.id] = prev;
+          renderQuestionArea();
+          renderQuestionNav();
+        };
+      });
 
       area.querySelectorAll(".option-btn").forEach(btn => {
         btn.onclick = () => {
