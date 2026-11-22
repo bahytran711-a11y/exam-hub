@@ -1092,14 +1092,25 @@
         <label class="muted" style="display:block; margin-bottom:5px;"><b>GitHub Gist ID:</b></label>
         <input type="text" id="gistId" placeholder="vd: a1b2c3d4e5f6..." />
       </div>
-      <div style="display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px;">
+      <div style="display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px; margin-bottom:12px;">
         <div style="display:flex; gap:8px;">
-          <button type="button" class="secondary" id="btnGistPull">Kéo về</button>
+          <button type="button" class="secondary" id="btnGistPull">Kéo về (Gộp)</button>
           <button type="button" class="secondary" id="btnGistPush">Đẩy lên</button>
         </div>
         <div style="display:flex; gap:8px;">
           <button type="button" class="secondary" onclick="closeModal('gistModal')">Đóng</button>
           <button type="button" id="btnGistSaveAndSync">Lưu & Đồng Bộ Ngay</button>
+        </div>
+      </div>
+
+      <div style="padding-top:12px; border-top:1px dashed var(--border); display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px;">
+        <span class="muted" style="font-size:0.8rem;">Sao lưu toàn bộ kho đề & lịch sử ra file:</span>
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="secondary" id="btnExportBackup" style="padding:6px 11px; font-size:0.8rem;">Xuất file Backup</button>
+          <label class="nav-btn" style="margin:0; padding:6px 11px; font-size:0.8rem; border-radius:10px;">
+            <span>Khôi phục Backup</span>
+            <input type="file" id="importBackupFile" accept=".json" hidden />
+          </label>
         </div>
       </div>
     </div>
@@ -1227,8 +1238,18 @@
       NOTES: "exam_hub_v4_notes",
       GIST_CFG: "exam_hub_v4_gist_cfg",
       ACTIVE_ID: "exam_hub_v4_active_id",
-      UPDATED_AT: "exam_hub_v4_updated_at"
+      UPDATED_AT: "exam_hub_v4_updated_at",
+      SEEDED: "exam_hub_v4_seeded"
     };
+
+    const LEGACY_PREFIXES = [
+      "exam_hub_v6_",
+      "exam_hub_v5_",
+      "exam_hub_v3_",
+      "exam_hub_v2_",
+      "exam_hub_v1_",
+      "exam_hub_"
+    ];
 
     function loadJson(key, fallback) {
       try {
@@ -1243,6 +1264,108 @@
       try {
         localStorage.setItem(key, JSON.stringify(val));
       } catch {}
+      scheduleIdbMirror();
+    }
+
+    // Tự động quét & kế thừa dữ liệu từ mọi phiên bản cũ nếu có trong localStorage
+    function migrateLegacyStorage() {
+      const suffixMap = [
+        ["exams", KEYS.EXAMS, Array.isArray],
+        ["history", KEYS.HISTORY, v => v && typeof v === "object" && !Array.isArray(v)],
+        ["notes", KEYS.NOTES, v => v && typeof v === "object" && !Array.isArray(v)],
+        ["gist_cfg", KEYS.GIST_CFG, v => v && typeof v === "object" && (v.token || v.gistId)],
+        ["active_id", KEYS.ACTIVE_ID, v => typeof v === "string" && v.length > 0],
+        ["updated_at", KEYS.UPDATED_AT, v => typeof v === "string" && v.length > 0]
+      ];
+
+      for (const [suffix, targetKey, validator] of suffixMap) {
+        const currentVal = loadJson(targetKey, null);
+        const hasCurrent = Array.isArray(currentVal)
+          ? currentVal.length > 0
+          : (currentVal && typeof currentVal === "object" ? Object.keys(currentVal).length > 0 : Boolean(currentVal));
+        if (hasCurrent) continue;
+
+        for (const prefix of LEGACY_PREFIXES) {
+          if (prefix === "exam_hub_v4_") continue;
+          const legacyVal = loadJson(prefix + suffix, null);
+          if (validator(legacyVal)) {
+            const nonEmpty = Array.isArray(legacyVal)
+              ? legacyVal.length > 0
+              : (typeof legacyVal === "object" ? Object.keys(legacyVal).length > 0 : Boolean(legacyVal));
+            if (nonEmpty) {
+              try { localStorage.setItem(targetKey, JSON.stringify(legacyVal)); } catch {}
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    migrateLegacyStorage();
+
+    // Sao lưu dự phòng song song vào IndexedDB để luôn giữ nguyên dữ liệu qua mọi lần update file
+    const IDB_NAME = "ExamHubPersistentVault";
+    const IDB_STORE = "vault";
+    const IDB_RECORD_KEY = "latest_snapshot";
+
+    function openVaultDb() {
+      return new Promise((resolve, reject) => {
+        if (!window.indexedDB) return reject(new Error("No IDB"));
+        const req = indexedDB.open(IDB_NAME, 1);
+        req.onupgradeneeded = () => {
+          const db = req.result;
+          if (!db.objectStoreNames.contains(IDB_STORE)) {
+            db.createObjectStore(IDB_STORE);
+          }
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function writeVaultSnapshot(snapshot) {
+      try {
+        const db = await openVaultDb();
+        await new Promise((resolve, reject) => {
+          const tx = db.transaction(IDB_STORE, "readwrite");
+          tx.objectStore(IDB_STORE).put(snapshot, IDB_RECORD_KEY);
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => reject(tx.error);
+        });
+        db.close();
+      } catch {}
+    }
+
+    async function readVaultSnapshot() {
+      try {
+        const db = await openVaultDb();
+        const data = await new Promise((resolve, reject) => {
+          const tx = db.transaction(IDB_STORE, "readonly");
+          const req = tx.objectStore(IDB_STORE).get(IDB_RECORD_KEY);
+          req.onsuccess = () => resolve(req.result || null);
+          req.onerror = () => reject(req.error);
+        });
+        db.close();
+        return data;
+      } catch {
+        return null;
+      }
+    }
+
+    let _idbTimer = null;
+    function scheduleIdbMirror() {
+      clearTimeout(_idbTimer);
+      _idbTimer = setTimeout(() => {
+        if (typeof state === "undefined") return;
+        writeVaultSnapshot({
+          updated_at: state.updatedAt || new Date().toISOString(),
+          exams: state.exams,
+          history: state.history,
+          notes: state.notes,
+          gistCfg: getGistConfig(),
+          activeExamId: state.activeExamId
+        });
+      }, 250);
     }
 
     function touchUpdatedAt() {
@@ -1274,14 +1397,43 @@
       pendingFileJson: null
     };
 
-    if (state.exams.length === 0) {
+    const wasSeededBefore = loadJson(KEYS.SEEDED, false);
+    if (state.exams.length === 0 && !wasSeededBefore) {
       state.exams = SAMPLE_EXAMS;
       saveJson(KEYS.EXAMS, state.exams);
+      saveJson(KEYS.SEEDED, true);
     }
     if (!state.activeExamId || !state.exams.some(e => e.id === state.activeExamId)) {
       state.activeExamId = state.exams[0]?.id || null;
       saveJson(KEYS.ACTIVE_ID, state.activeExamId);
     }
+
+    // Đồng bộ 2 chiều với kho IndexedDB khi mở trang (không bao giờ ghi đè mất dữ liệu cũ)
+    (async function hydrateFromPersistentVault() {
+      const snap = await readVaultSnapshot();
+      const localCount = Array.isArray(state.exams) ? state.exams.length : 0;
+      const snapExams = Array.isArray(snap?.exams) ? snap.exams : [];
+      if (snapExams.length > 0 && (localCount === 0 || (!wasSeededBefore && localCount <= SAMPLE_EXAMS.length && snapExams.length > localCount))) {
+        state.exams = snapExams;
+        state.history = snap.history || state.history;
+        state.notes = snap.notes || state.notes;
+        state.updatedAt = snap.updated_at || state.updatedAt;
+        if (snap.gistCfg && (snap.gistCfg.token || snap.gistCfg.gistId)) {
+          saveJson(KEYS.GIST_CFG, snap.gistCfg);
+        }
+        state.activeExamId = (snap.activeExamId && state.exams.some(e => e.id === snap.activeExamId))
+          ? snap.activeExamId
+          : (state.exams[0]?.id || null);
+        saveJson(KEYS.EXAMS, state.exams);
+        saveJson(KEYS.HISTORY, state.history);
+        saveJson(KEYS.NOTES, state.notes);
+        saveJson(KEYS.ACTIVE_ID, state.activeExamId);
+        saveJson(KEYS.SEEDED, true);
+        renderAll();
+      } else {
+        scheduleIdbMirror();
+      }
+    })();
 
     function showToast(msg) {
       const el = document.getElementById("toast");
@@ -2100,20 +2252,56 @@
       };
     }
 
-    function applySyncPayload(data) {
-      if (!data || !Array.isArray(data.exams)) throw new Error("Dữ liệu Gist không hợp lệ.");
-      state.exams = data.exams;
-      state.history = data.history || {};
-      state.notes = data.notes || {};
-      state.updatedAt = data.updated_at || new Date().toISOString();
+    function mergeSyncPayload(data) {
+      if (!data || !Array.isArray(data.exams)) throw new Error("Dữ liệu sao lưu / Gist không hợp lệ.");
+      const examMap = new Map(state.exams.map(e => [e.id, e]));
+      for (const incoming of data.exams) {
+        if (!incoming || !incoming.id) continue;
+        const existing = examMap.get(incoming.id);
+        if (!existing) {
+          examMap.set(incoming.id, incoming);
+        } else if ((incoming.bai_tap?.length || 0) >= (existing.bai_tap?.length || 0)) {
+          examMap.set(incoming.id, incoming);
+        }
+      }
+      state.exams = Array.from(examMap.values());
+
+      const incHistory = data.history || {};
+      for (const [examId, records] of Object.entries(incHistory)) {
+        if (!Array.isArray(records)) continue;
+        const curList = state.history[examId] || [];
+        const seenIds = new Set(curList.map(r => r.id));
+        const merged = [...curList];
+        for (const r of records) {
+          if (r && !seenIds.has(r.id)) {
+            seenIds.add(r.id);
+            merged.push(r);
+          }
+        }
+        state.history[examId] = merged;
+      }
+
+      const incNotes = data.notes || {};
+      for (const [examId, noteObj] of Object.entries(incNotes)) {
+        if (!noteObj || typeof noteObj !== "object") continue;
+        state.notes[examId] = { ...(state.notes[examId] || {}), ...noteObj };
+      }
+
+      state.updatedAt = touchUpdatedAt();
       saveJson(KEYS.EXAMS, state.exams);
       saveJson(KEYS.HISTORY, state.history);
       saveJson(KEYS.NOTES, state.notes);
-      saveJson(KEYS.UPDATED_AT, state.updatedAt);
-      state.activeExamId = state.exams[0]?.id || null;
-      saveJson(KEYS.ACTIVE_ID, state.activeExamId);
+      saveJson(KEYS.SEEDED, true);
+      if (!state.activeExamId || !state.exams.some(e => e.id === state.activeExamId)) {
+        state.activeExamId = state.exams[0]?.id || null;
+        saveJson(KEYS.ACTIVE_ID, state.activeExamId);
+      }
       resetAttempt();
       renderAll();
+    }
+
+    function applySyncPayload(data) {
+      mergeSyncPayload(data);
     }
 
     async function pullFromGist(cfg) {
@@ -2356,6 +2544,38 @@
       } catch (err) {
         showToast(err.message);
       }
+    };
+
+    document.getElementById("btnExportBackup").onclick = () => {
+      const payload = buildSyncPayload();
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `exam-hub-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      showToast("Đã xuất file Backup toàn bộ dữ liệu!");
+    };
+
+    document.getElementById("importBackupFile").onchange = e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(reader.result);
+          mergeSyncPayload(parsed);
+          closeModal("gistModal");
+          showToast("Đã gộp & khôi phục dữ liệu từ file Backup!");
+        } catch (err) {
+          showToast(err.message || "File Backup không hợp lệ.");
+        }
+      };
+      reader.readAsText(file);
+      e.target.value = "";
     };
 
     document.getElementById("btnToggleTheory").onclick = () => {
