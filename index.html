@@ -702,6 +702,87 @@
       white-space: normal;
     }
 
+
+    .exam-item-actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .icon-ghost {
+      background: transparent;
+      color: var(--muted);
+      border-color: transparent;
+      padding: 4px 7px;
+      font-size: 0.76rem;
+      border-radius: 7px;
+    }
+
+    .icon-ghost:hover {
+      background: var(--green-dim);
+      color: var(--green-bright);
+      border-color: var(--green-border);
+    }
+
+    .practice-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      padding: 9px 12px;
+      margin-bottom: 12px;
+    }
+
+    .practice-bar label {
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .practice-bar input[type="number"],
+    .practice-bar input[type="text"],
+    .practice-bar select {
+      padding: 5px 9px;
+      font-size: 0.82rem;
+      border-radius: 8px;
+      height: 32px;
+    }
+
+    .radio-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      padding: 11px 13px;
+      margin-bottom: 12px;
+    }
+
+    .radio-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--ink);
+      cursor: pointer;
+    }
+
+    .radio-option input[type="radio"] {
+      accent-color: var(--green);
+      width: 16px;
+      height: 16px;
+      margin: 0;
+    }
+
   </style>
 </head>
 <body>
@@ -769,8 +850,9 @@
           </div>
         </div>
 
-        <div class="toolbar" style="padding-bottom:10px; margin-bottom:12px;">
+        <div class="toolbar" style="padding-bottom:10px; margin-bottom:10px;">
           <div class="toolbar-group">
+            <button type="button" class="secondary" id="btnRenameCurrentExam">Đổi tên đề</button>
             <button type="button" class="secondary" id="btnShuffle">Trộn câu & đáp án</button>
             <button type="button" class="secondary" id="btnToggleTheory">Lý thuyết</button>
             <select id="filterQuestionsSelect" style="width:auto; padding:7px 11px; font-size:0.84rem; font-weight:600;">
@@ -779,6 +861,24 @@
               <option value="wrong">Câu sai gần nhất</option>
             </select>
           </div>
+        </div>
+
+        <div class="practice-bar" id="practiceConfigBar">
+          <label>Chế độ chọn câu:
+            <select id="selectPracticeMode" style="width:auto;">
+              <option value="all">Tất cả câu</option>
+              <option value="random">Random số lượng câu</option>
+              <option value="custom">Chọn câu cụ thể</option>
+            </select>
+          </label>
+          <label id="wrapRandomCount" style="display:none;">Số câu:
+            <input type="number" id="inputRandomCount" min="1" value="5" style="width:74px;" />
+          </label>
+          <label id="wrapCustomRange" style="display:none;">Nhập câu:
+            <input type="text" id="inputCustomRange" placeholder="vd: 1, 3, 5-8" style="width:155px;" />
+          </label>
+          <button type="button" class="secondary" id="btnApplyPractice" style="padding:5px 11px; font-size:0.82rem;">Áp dụng</button>
+          <button type="button" class="icon-ghost" id="btnResetPractice" style="display:none;">Đặt lại</button>
         </div>
 
         <div id="scoreSummary" style="display:none; margin-bottom:14px;" class="explanation-box"></div>
@@ -795,18 +895,39 @@
     </section>
   </main>
 
-  <!-- MODAL DÁN JSON -->
+  <!-- MODAL NẠP / DÁN JSON (TẠO MỚI HOẶC CỘNG DỒN) -->
   <div class="modal-backdrop" id="pasteModal">
     <div class="modal">
       <div class="card-title">
-        <span>Dán JSON đề bài tập (3 phần)</span>
+        <span id="importModalTitle">Dán JSON đề bài tập</span>
         <button type="button" class="secondary" style="padding:4px 9px;" onclick="closeModal('pasteModal')">✕</button>
       </div>
-      <p class="muted">Thứ tự chuẩn: <code>ly_thuyet</code> → <code>bai_tap</code> (không đáp án) → <code>dap_an_giai_thich</code> (<code>ly_thuyet</code> có thể để trống).</p>
-      <textarea id="pasteJsonTextarea" rows="11" placeholder='{"id":"ly-01","title":"...","subject":"Lý","ly_thuyet":[],"bai_tap":[...],"dap_an_giai_thich":{...}}'></textarea>
+
+      <div class="radio-group">
+        <label class="radio-option">
+          <input type="radio" name="importMode" value="new" checked />
+          <span>Tạo đề / bài tập mới</span>
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="importMode" value="append" />
+          <span>Cộng dồn (nạp thêm câu hỏi vào đề đã tạo)</span>
+        </label>
+        <div id="appendTargetWrap" style="display:none; padding-left:24px; margin-top:2px;">
+          <label class="muted" style="display:block; margin-bottom:4px;">Chọn đề muốn cộng dồn:</label>
+          <select id="appendTargetSelect"></select>
+        </div>
+      </div>
+
+      <div id="pasteTextareaWrap">
+        <p class="muted" style="margin-top:0;">Thứ tự chuẩn: <code>ly_thuyet</code> → <code>bai_tap</code> → <code>dap_an_giai_thich</code>.</p>
+        <textarea id="pasteJsonTextarea" rows="9" placeholder='{"id":"ly-01","title":"...","subject":"Lý","ly_thuyet":[],"bai_tap":[...],"dap_an_giai_thich":{...}}'></textarea>
+      </div>
+
+      <div id="filePreviewNote" class="muted" style="display:none; padding:10px 12px; border:1px dashed var(--border); border-radius:10px; background:var(--bg-elevated);"></div>
+
       <div style="margin-top:12px; display:flex; justify-content:flex-end; gap:8px;">
         <button type="button" class="secondary" onclick="closeModal('pasteModal')">Hủy</button>
-        <button type="button" id="btnConfirmPaste">Lưu vào kho đề</button>
+        <button type="button" id="btnConfirmPaste">Xác nhận lưu</button>
       </div>
     </div>
   </div>
@@ -1002,10 +1123,13 @@
       flagged: {},
       shuffledOrder: null,
       shuffledOptions: {},
+      selectedQuestionIds: null,
+      practiceMode: "all",
       submitted: false,
       lastGrading: null,
       showTheory: false,
-      filterMode: "all"
+      filterMode: "all",
+      pendingFileJson: null
     };
 
     if (state.exams.length === 0) {
@@ -1074,13 +1198,86 @@
     function addExamToLibrary(rawObj) {
       const exam = validateAndNormalizeExam(rawObj);
       const idx = state.exams.findIndex(e => e.id === exam.id);
-      if (idx >= 0) state.exams[idx] = exam;
-      else state.exams.unshift(exam);
+      if (idx >= 0) {
+        exam.id = exam.id + "-" + Date.now();
+      }
+      state.exams.unshift(exam);
       saveJson(KEYS.EXAMS, state.exams);
       state.updatedAt = touchUpdatedAt();
       state.selectedSubject = "All";
       selectExam(exam.id);
-      showToast(`Đã lưu: ${exam.title}`);
+      showToast(`Đã tạo đề mới: ${exam.title}`);
+    }
+
+    function appendExamToExisting(targetId, rawObj) {
+      const target = state.exams.find(e => e.id === targetId);
+      if (!target) throw new Error("Không tìm thấy đề đích để cộng dồn.");
+      const incoming = validateAndNormalizeExam(rawObj);
+
+      if (Array.isArray(incoming.ly_thuyet) && incoming.ly_thuyet.length) {
+        target.ly_thuyet = [...(target.ly_thuyet || []), ...incoming.ly_thuyet];
+      }
+
+      const existingIds = new Set(target.bai_tap.map(q => q.id));
+      let addedCount = 0;
+
+      incoming.bai_tap.forEach((q, idx) => {
+        let newId = q.id;
+        if (existingIds.has(newId)) {
+          newId = `${q.id}_add_${Date.now()}_${idx + 1}`;
+        }
+        existingIds.add(newId);
+
+        const clonedQ = { ...q, id: newId };
+        target.bai_tap.push(clonedQ);
+
+        const sol = (incoming.dap_an_giai_thich || {})[q.id];
+        if (sol) {
+          if (!target.dap_an_giai_thich) target.dap_an_giai_thich = {};
+          target.dap_an_giai_thich[newId] = sol;
+        }
+        addedCount += 1;
+      });
+
+      saveJson(KEYS.EXAMS, state.exams);
+      state.updatedAt = touchUpdatedAt();
+      state.selectedSubject = "All";
+      selectExam(target.id);
+      showToast(`Đã cộng dồn +${addedCount} câu vào "${target.title}"!`);
+    }
+
+    function renameExam(examId) {
+      const target = state.exams.find(e => e.id === examId);
+      if (!target) return;
+      const nextName = prompt("Nhập tên mới cho bài tập / đề:", target.title);
+      if (nextName === null) return;
+      const trimmed = nextName.trim();
+      if (!trimmed) return showToast("Tên đề không được để trống.");
+      target.title = trimmed;
+      saveJson(KEYS.EXAMS, state.exams);
+      state.updatedAt = touchUpdatedAt();
+      renderAll();
+      showToast("Đã đổi tên đề!");
+    }
+
+    function parseQuestionSelectionInput(rawInput, totalCount) {
+      const parts = String(rawInput || "").split(/[,;\s]+/).map(s => s.trim()).filter(Boolean);
+      const picked = new Set();
+      for (const p of parts) {
+        if (/^\d+-\d+$/.test(p)) {
+          const [aStr, bStr] = p.split("-");
+          let a = parseInt(aStr, 10);
+          let b = parseInt(bStr, 10);
+          if (a > b) [a, b] = [b, a];
+          for (let i = a; i <= b; i++) {
+            if (i >= 1 && i <= totalCount) picked.add(i);
+          }
+        } else if (/^\d+$/.test(p)) {
+          const n = parseInt(p, 10);
+          if (n >= 1 && n <= totalCount) picked.add(n);
+        }
+      }
+      return Array.from(picked).sort((x, y) => x - y);
     }
 
     function deleteExam(examId) {
@@ -1125,9 +1322,14 @@
       const exam = getCurrentExam();
       if (!exam) return [];
       const map = new Map(exam.bai_tap.map(q => [q.id, q]));
-      const base = state.shuffledOrder
+      let base = state.shuffledOrder
         ? state.shuffledOrder.map(id => map.get(id)).filter(Boolean)
-        : exam.bai_tap;
+        : [...exam.bai_tap];
+
+      if (Array.isArray(state.selectedQuestionIds) && state.selectedQuestionIds.length > 0) {
+        const allowed = new Set(state.selectedQuestionIds);
+        base = base.filter(q => allowed.has(q.id));
+      }
 
       if (state.filterMode === "flagged") {
         return base.filter(q => !!state.flagged[q.id]);
@@ -1135,7 +1337,7 @@
       if (state.filterMode === "wrong") {
         const last = (state.history[exam.id] || [])[0];
         const wrongSet = new Set(last ? last.wrongNumbers : []);
-        return base.filter((_, idx) => wrongSet.has(idx + 1));
+        return base.filter(q => wrongSet.has(getDisplayNumber(exam, q.id)));
       }
       return base;
     }
@@ -1145,12 +1347,19 @@
       return idx >= 0 ? idx + 1 : 1;
     }
 
-    function resetAttempt() {
+    function resetAttempt(keepSubset = false) {
       state.currentIndex = 0;
       state.answers = {};
       state.flagged = {};
       state.shuffledOrder = null;
       state.shuffledOptions = {};
+      if (!keepSubset) {
+        state.selectedQuestionIds = null;
+        state.practiceMode = "all";
+        const modeEl = document.getElementById("selectPracticeMode");
+        if (modeEl) modeEl.value = "all";
+        updatePracticeBarUI();
+      }
       state.submitted = false;
       state.lastGrading = null;
       document.getElementById("scoreSummary").style.display = "none";
@@ -1232,7 +1441,12 @@
       let totalPoints = 0;
       let maxPoints = 0;
 
+      const activeSet = Array.isArray(state.selectedQuestionIds) && state.selectedQuestionIds.length > 0
+        ? new Set(state.selectedQuestionIds)
+        : null;
+
       exam.bai_tap.forEach((q, idx) => {
+        if (activeSet && !activeSet.has(q.id)) return;
         const qNum = idx + 1;
         const sol = solMap[q.id] || {};
         const rightAns = (sol.answer || "").trim();
@@ -1393,9 +1607,16 @@
             <div class="exam-item-title">${escapeHtml(ex.title)}</div>
             <div class="exam-item-meta">${escapeHtml(normalizeSubject(ex.subject))} • ${ex.bai_tap.length} câu • Gần nhất: ${latest}</div>
           </div>
-          <button type="button" class="danger-ghost" title="Xóa đề này" aria-label="Xóa đề này">Xóa</button>
+          <div class="exam-item-actions">
+            <button type="button" class="icon-ghost btn-rename-item" title="Đổi tên đề">Sửa</button>
+            <button type="button" class="danger-ghost" title="Xóa đề này" aria-label="Xóa đề này">Xóa</button>
+          </div>
         `;
         div.onclick = () => selectExam(ex.id);
+        div.querySelector(".btn-rename-item").onclick = (ev) => {
+          ev.stopPropagation();
+          renameExam(ex.id);
+        };
         div.querySelector(".danger-ghost").onclick = (ev) => {
           ev.stopPropagation();
           deleteExam(ex.id);
@@ -1510,7 +1731,10 @@
       }
 
       document.getElementById("currentExamTitle").textContent = exam.title;
-      document.getElementById("currentExamMeta").textContent = `${normalizeSubject(exam.subject)} • ${exam.bai_tap.length} câu`;
+      const subsetNote = Array.isArray(state.selectedQuestionIds) && state.selectedQuestionIds.length > 0
+        ? ` (Đang làm ${state.selectedQuestionIds.length}/${exam.bai_tap.length} câu)`
+        : "";
+      document.getElementById("currentExamMeta").textContent = `${normalizeSubject(exam.subject)} • ${exam.bai_tap.length} câu${subsetNote}`;
 
       if (!qs.length) {
         area.innerHTML = `<p class="muted">Không có câu hỏi nào phù hợp bộ lọc hiện tại.</p>`;
@@ -1770,13 +1994,53 @@
       applySidebarLayout();
     };
 
+    function prepareImportModal({ isFile = false, parsedFileObj = null, fileName = "" } = {}) {
+      state.pendingFileJson = isFile ? parsedFileObj : null;
+      document.getElementById("importModalTitle").textContent = isFile
+        ? `Nạp file JSON: ${fileName}`
+        : "Dán JSON đề bài tập";
+
+      document.getElementById("pasteTextareaWrap").style.display = isFile ? "none" : "block";
+      const fileNote = document.getElementById("filePreviewNote");
+      if (isFile && parsedFileObj) {
+        const qCount = Array.isArray(parsedFileObj.bai_tap) ? parsedFileObj.bai_tap.length : 0;
+        fileNote.style.display = "block";
+        fileNote.innerHTML = `Đã đọc file <b>${escapeHtml(fileName)}</b> • Tiêu đề gốc: <b>${escapeHtml(parsedFileObj.title || "Chưa đặt tên")}</b> (${qCount} câu hỏi).`;
+      } else {
+        fileNote.style.display = "none";
+        document.getElementById("pasteJsonTextarea").value = "";
+      }
+
+      const targetSelect = document.getElementById("appendTargetSelect");
+      targetSelect.innerHTML = state.exams.map(ex =>
+        `<option value="${escapeAttr(ex.id)}" ${ex.id === state.activeExamId ? "selected" : ""}>${escapeHtml(ex.title)} (${ex.bai_tap.length} câu)</option>`
+      ).join("");
+
+      const newRadio = document.querySelector('input[name="importMode"][value="new"]');
+      const appendRadio = document.querySelector('input[name="importMode"][value="append"]');
+      newRadio.checked = true;
+      appendRadio.disabled = state.exams.length === 0;
+      document.getElementById("appendTargetWrap").style.display = "none";
+
+      openModal("pasteModal");
+    }
+
+    document.querySelectorAll('input[name="importMode"]').forEach(r => {
+      r.onchange = () => {
+        const isAppend = document.querySelector('input[name="importMode"]:checked')?.value === "append";
+        document.getElementById("appendTargetWrap").style.display = isAppend ? "block" : "none";
+      };
+    });
+
     document.getElementById("importExamFile").onchange = e => {
       const file = e.target.files[0];
       if (!file) return;
       const reader = new FileReader();
       reader.onload = () => {
         try {
-          addExamToLibrary(JSON.parse(reader.result));
+          const parsed = JSON.parse(reader.result);
+          validateAndNormalizeExam(parsed);
+          prepareImportModal({ isFile: true, parsedFileObj: parsed, fileName: file.name });
         } catch (err) {
           showToast(err.message || "Lỗi đọc JSON.");
         }
@@ -1786,17 +2050,99 @@
     };
 
     document.getElementById("btnPasteJson").onclick = () => {
-      document.getElementById("pasteJsonTextarea").value = "";
-      openModal("pasteModal");
+      prepareImportModal({ isFile: false });
     };
 
     document.getElementById("btnConfirmPaste").onclick = () => {
       try {
-        addExamToLibrary(JSON.parse(document.getElementById("pasteJsonTextarea").value));
+        const rawObj = state.pendingFileJson
+          ? state.pendingFileJson
+          : JSON.parse(document.getElementById("pasteJsonTextarea").value);
+        const mode = document.querySelector('input[name="importMode"]:checked')?.value || "new";
+
+        if (mode === "append") {
+          const targetId = document.getElementById("appendTargetSelect").value;
+          appendExamToExisting(targetId, rawObj);
+        } else {
+          addExamToLibrary(rawObj);
+        }
+        state.pendingFileJson = null;
         closeModal("pasteModal");
       } catch (err) {
         showToast(err.message || "JSON không hợp lệ.");
       }
+    };
+
+    document.getElementById("btnRenameCurrentExam").onclick = () => {
+      if (!state.activeExamId) return;
+      renameExam(state.activeExamId);
+    };
+
+    function updatePracticeBarUI() {
+      const mode = document.getElementById("selectPracticeMode").value;
+      document.getElementById("wrapRandomCount").style.display = mode === "random" ? "inline-flex" : "none";
+      document.getElementById("wrapCustomRange").style.display = mode === "custom" ? "inline-flex" : "none";
+      const hasSubset = Array.isArray(state.selectedQuestionIds) && state.selectedQuestionIds.length > 0;
+      document.getElementById("btnResetPractice").style.display = hasSubset ? "inline-flex" : "none";
+    }
+
+    document.getElementById("selectPracticeMode").onchange = updatePracticeBarUI;
+
+    document.getElementById("btnApplyPractice").onclick = () => {
+      const exam = getCurrentExam();
+      if (!exam) return;
+      const mode = document.getElementById("selectPracticeMode").value;
+      const total = exam.bai_tap.length;
+
+      if (mode === "all") {
+        state.practiceMode = "all";
+        state.selectedQuestionIds = null;
+        resetAttempt(true);
+        updatePracticeBarUI();
+        renderQuestionNav();
+        renderQuestionArea();
+        showToast(`Hiển thị toàn bộ ${total} câu.`);
+        return;
+      }
+
+      if (mode === "random") {
+        const count = parseInt(document.getElementById("inputRandomCount").value, 10);
+        if (!count || count < 1) return showToast("Nhập số lượng câu hợp lệ (>= 1).");
+        const k = Math.min(count, total);
+        const pool = [...exam.bai_tap];
+        for (let i = pool.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [pool[i], pool[j]] = [pool[j], pool[i]];
+        }
+        state.practiceMode = "random";
+        state.selectedQuestionIds = pool.slice(0, k).map(q => q.id);
+        resetAttempt(true);
+        updatePracticeBarUI();
+        renderQuestionNav();
+        renderQuestionArea();
+        showToast(`Đã chọn ngẫu nhiên ${k}/${total} câu!`);
+        return;
+      }
+
+      if (mode === "custom") {
+        const raw = document.getElementById("inputCustomRange").value;
+        const nums = parseQuestionSelectionInput(raw, total);
+        if (!nums.length) return showToast(`Nhập số câu hợp lệ (1 đến ${total}), vd: 1, 3, 5-8.`);
+        state.practiceMode = "custom";
+        state.selectedQuestionIds = nums.map(n => exam.bai_tap[n - 1].id);
+        resetAttempt(true);
+        updatePracticeBarUI();
+        renderQuestionNav();
+        renderQuestionArea();
+        showToast(`Đã chọn ${nums.length} câu: ${nums.join(", ")}`);
+      }
+    };
+
+    document.getElementById("btnResetPractice").onclick = () => {
+      resetAttempt(false);
+      renderQuestionNav();
+      renderQuestionArea();
+      showToast("Đã quay về làm toàn bộ đề.");
     };
 
     document.getElementById("btnOpenGist").onclick = () => {
@@ -1857,7 +2203,9 @@
     document.getElementById("btnShuffle").onclick = () => {
       const exam = getCurrentExam();
       if (!exam) return;
-      const ids = exam.bai_tap.map(q => q.id);
+      const ids = (Array.isArray(state.selectedQuestionIds) && state.selectedQuestionIds.length > 0
+        ? [...state.selectedQuestionIds]
+        : exam.bai_tap.map(q => q.id));
       for (let i = ids.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [ids[i], ids[j]] = [ids[j], ids[i]];
@@ -1881,7 +2229,7 @@
 
     document.getElementById("btnNewAttempt").onclick = () => {
       if (!getCurrentExam()) return;
-      resetAttempt();
+      resetAttempt(true);
       renderQuestionNav();
       renderQuestionArea();
       showToast("Đã bắt đầu lượt làm bài mới!");
