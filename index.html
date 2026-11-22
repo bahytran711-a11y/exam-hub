@@ -1474,6 +1474,7 @@
           id: String(q.id || `q${idx + 1}`),
           type: q.type || (Array.isArray(q.items) ? "true_false" : (Array.isArray(q.options) ? "mcq" : "essay")),
           question: String(q.question || ""),
+		  svg: String(q.svg || ""),
           options: Array.isArray(q.options) ? q.options : [],
           items: Array.isArray(q.items) && q.items.length
             ? q.items.map((it, j) => ({
@@ -2141,6 +2142,7 @@
             </button>
           </div>
           <div class="q-text">${formatScientificHtml(q.question)}</div>
+		  ${q.svg ? `<div style="margin: 12px 0; text-align: center; overflow-x: auto;">${q.svg}</div>` : ""}
           ${inputHtml}
           ${showSol ? `
             <div class="explanation-box">
