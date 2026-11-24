@@ -245,7 +245,7 @@
       margin: 18px auto;
       padding: 0 14px 48px;
       display: grid;
-      grid-template-columns: 310px 1fr;
+      grid-template-columns: 330px 1fr;
       gap: 18px;
       align-items: start;
     }
@@ -284,13 +284,45 @@
 
     .card-title {
       margin: 0 0 12px;
-      font-size: 0.96rem;
+      font-size: 0.94rem;
       font-weight: 750;
       color: var(--ink);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
+      gap: 10px;
+      flex-wrap: nowrap;
+    }
+
+    .card-title-heading {
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .card-title-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .card-header-btn {
+      white-space: nowrap;
+      flex-shrink: 0;
+      padding: 5px 10px;
+      font-size: 0.75rem;
+      line-height: 1.2;
+      border-radius: 8px;
+    }
+
+    @media (max-width: 390px) {
+      .card-title {
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .card-title-actions {
+        flex-wrap: wrap;
+      }
     }
 
     .muted {
@@ -300,10 +332,13 @@
 
     .badge {
       display: inline-block;
-      padding: 2px 9px;
+      padding: 3px 9px;
       border-radius: 999px;
       font-size: 0.75rem;
       font-weight: 650;
+      line-height: 1.2;
+      white-space: nowrap;
+      flex-shrink: 0;
       background: var(--green-dim);
       color: var(--green-bright);
       border: 1px solid var(--green-border);
@@ -313,7 +348,7 @@
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
 
     .subject-tab {
@@ -337,25 +372,120 @@
       font-weight: 700;
     }
 
+    .status-filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-bottom: 10px;
+    }
+
+    .status-pill {
+      padding: 3px 9px;
+      font-size: 0.72rem;
+      border-radius: 999px;
+      background: var(--bg-elevated);
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+
+    .status-pill:hover {
+      color: var(--ink);
+      border-color: var(--green-border);
+    }
+
+    .status-pill.active {
+      background: var(--green-dim);
+      color: var(--green-bright);
+      border-color: var(--green-border);
+      font-weight: 700;
+    }
+
+    .search-sort-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .search-sort-row input[type="search"] {
+      flex: 1;
+      min-width: 0;
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      border-radius: 9px;
+      border: 1px solid var(--border);
+      background: var(--bg-elevated);
+      color: var(--ink);
+    }
+
+    .search-sort-row input[type="search"]:focus {
+      outline: none;
+      border-color: var(--green);
+    }
+
+    .chapter-groups {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 440px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    .chapter-group {
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      background: rgba(17, 26, 22, 0.65);
+      overflow: hidden;
+    }
+
+    .chapter-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 7px 10px;
+      background: var(--card-bg-2);
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .chapter-header-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--green-bright);
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .chapter-header-meta {
+      font-size: 0.7rem;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+
     .exam-list {
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      max-height: 360px;
-      overflow-y: auto;
+      gap: 6px;
+      padding: 8px;
+      min-height: 36px;
     }
 
     .exam-item {
       border: 1px solid var(--border);
       background: var(--bg-elevated);
-      border-radius: 11px;
-      padding: 10px 12px;
+      border-radius: 10px;
+      padding: 9px 10px;
       cursor: pointer;
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
-      gap: 8px;
-      transition: border-color 0.14s ease, background-color 0.14s ease;
+      gap: 6px;
+      transition: border-color 0.14s ease, background-color 0.14s ease, opacity 0.14s ease;
     }
 
     .exam-item:hover {
@@ -369,6 +499,39 @@
       box-shadow: inset 3px 0 0 var(--green);
     }
 
+    .exam-item.dragging {
+      opacity: 0.45;
+    }
+
+    .exam-item.drag-over-top {
+      border-top: 2px solid var(--amber);
+    }
+
+    .exam-item.drag-over-bottom {
+      border-bottom: 2px solid var(--amber);
+    }
+
+    .drag-handle {
+      color: var(--muted);
+      font-size: 0.85rem;
+      line-height: 1;
+      padding: 3px 4px;
+      border-radius: 6px;
+      cursor: grab;
+      user-select: none;
+      touch-action: none;
+      flex-shrink: 0;
+    }
+
+    .drag-handle:hover {
+      color: var(--green-bright);
+      background: rgba(34, 197, 94, 0.12);
+    }
+
+    .drag-handle:active {
+      cursor: grabbing;
+    }
+
     .exam-item-main {
       min-width: 0;
       flex: 1;
@@ -376,14 +539,14 @@
 
     .exam-item-title {
       font-weight: 700;
-      font-size: 0.9rem;
+      font-size: 0.86rem;
       color: var(--ink);
     }
 
     .exam-item-meta {
-      font-size: 0.76rem;
+      font-size: 0.73rem;
       color: var(--muted);
-      margin-top: 3px;
+      margin-top: 2px;
     }
 
     .toolbar {
@@ -910,7 +1073,7 @@
     .exam-item-actions {
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 3px;
       flex-shrink: 0;
     }
 
@@ -918,8 +1081,8 @@
       background: transparent;
       color: var(--muted);
       border-color: transparent;
-      padding: 4px 7px;
-      font-size: 0.76rem;
+      padding: 4px 6px;
+      font-size: 0.74rem;
       border-radius: 7px;
     }
 
@@ -1151,15 +1314,37 @@
     <aside class="sidebar-col">
       <div class="card">
         <div class="card-title">
-          <span>Kho đề lưu trữ</span>
-          <div style="display:flex; align-items:center; gap:6px;">
+          <span class="card-title-heading">Kho đề</span>
+          <div class="card-title-actions">
             <span class="badge" id="examCountBadge">0 đề</span>
-            <button type="button" class="secondary" id="btnCollapseExamCard" style="padding:4px 9px; font-size:0.76rem;">Thu gọn</button>
+            <button type="button" class="secondary card-header-btn" id="btnResetOrder" title="Khôi phục thứ tự đề mặc định">Reset thứ tự</button>
+            <button type="button" class="secondary card-header-btn" id="btnCollapseExamCard">Thu gọn</button>
           </div>
         </div>
         <div id="examCardBody">
+          <!-- Level 1: Subject Tabs -->
           <div class="subject-tabs" id="subjectTabs"></div>
-          <div class="exam-list" id="examList"></div>
+
+          <!-- Search Input -->
+          <div class="search-sort-row">
+            <input
+              type="search"
+              id="examSearchInput"
+              placeholder="Tìm tên đề, chương, mã đề..."
+              aria-label="Tìm kiếm đề thi"
+            />
+          </div>
+
+          <!-- Status Filter Pills -->
+          <div class="status-filter-row" id="statusFilterRow" role="group" aria-label="Lọc theo trạng thái làm bài">
+            <button type="button" class="status-pill active" data-status-filter="all">Tất cả</button>
+            <button type="button" class="status-pill" data-status-filter="not_started">Chưa làm</button>
+            <button type="button" class="status-pill" data-status-filter="in_progress">Đang làm</button>
+            <button type="button" class="status-pill" data-status-filter="completed">Hoàn thành</button>
+          </div>
+
+          <!-- Level 2 & 3: Chapter Groups & Draggable Exam List -->
+          <div class="chapter-groups" id="chapterGroupsContainer"></div>
         </div>
       </div>
 
@@ -1252,8 +1437,8 @@
       </div>
 
       <div id="pasteTextareaWrap">
-        <p class="muted" style="margin-top:0;">Thứ tự chuẩn: <code>ly_thuyet</code> → <code>bai_tap</code> (hỗ trợ <code>image</code> / <code>svg</code>) → <code>dap_an_giai_thich</code>.</p>
-        <textarea id="pasteJsonTextarea" rows="9" placeholder='{"id":"ly-01","title":"...","subject":"Lý","ly_thuyet":[],"bai_tap":[...],"dap_an_giai_thich":{...}}'></textarea>
+        <p class="muted" style="margin-top:0;">Thứ tự chuẩn: <code>ly_thuyet</code> → <code>bai_tap</code> (hỗ trợ <code>image</code> / <code>svg</code>) → <code>dap_an_giai_thich</code>. Có thể kèm <code>chapter</code>.</p>
+        <textarea id="pasteJsonTextarea" rows="9" placeholder='{"id":"ly12-c1-de01","title":"Đề ôn tập Chương 1 - Đề số 1","subject":"Lý","chapter":"Chương 1 - Nhiệt học","ly_thuyet":[],"bai_tap":[...],"dap_an_giai_thich":{...}}'></textarea>
       </div>
 
       <div id="filePreviewNote" class="muted" style="display:none; padding:10px 12px; border:1px dashed var(--border); border-radius:10px; background:var(--bg-elevated);"></div>
@@ -1347,6 +1532,7 @@
         id: "sample-ly-01",
         title: "Bài tập Động lực học & Mạch điện",
         subject: "Lý",
+        chapter: "Chương 1 - Động lực học & Mạch điện",
         ly_thuyet: [
           {
             heading: "Định luật II Newton",
@@ -1405,6 +1591,7 @@
         id: "sample-toan-01",
         title: "Bài tập Hàm số & Biến đổi nhanh",
         subject: "Toán",
+        chapter: "Chuyên đề Hàm số & Biến đổi",
         ly_thuyet: [],
         bai_tap: [
           {
@@ -1435,6 +1622,7 @@
         id: "sample-anh-01",
         title: "Academic Collocations & Usage Drill",
         subject: "Anh",
+        chapter: "Chuyên đề Collocations & Từ vựng",
         ly_thuyet: [],
         bai_tap: [
           {
@@ -1638,6 +1826,33 @@
       lb.classList.add("open");
     }
 
+    /**
+     * Infer or normalize chapter label so exams group cleanly into Môn học -> Chương / Chủ đề.
+     */
+    function inferChapter(raw) {
+      if (raw && typeof raw.chapter === "string" && raw.chapter.trim()) {
+        return raw.chapter.trim();
+      }
+      const title = String(raw?.title || "").trim();
+      const id = String(raw?.id || "").trim();
+
+      const chapterMatch = title.match(/(chương\s+\d+[^\-\–—:|]*|chủ đề\s+\d+[^\-\–—:|]*)/i);
+      if (chapterMatch && chapterMatch[1]) {
+        return chapterMatch[1].trim();
+      }
+
+      const codeMatch = `${id} ${title}`.match(/\bc(\d+)\b/i);
+      if (codeMatch && codeMatch[1]) {
+        return `Chương ${codeMatch[1]}`;
+      }
+
+      const subj = normalizeSubject(raw?.subject);
+      if (subj === "Toán") return "Chuyên đề Toán học";
+      if (subj === "Lý") return "Chuyên đề Vật lí";
+      if (subj === "Anh") return "Chuyên đề Tiếng Anh";
+      return "Chuyên đề & Bài tập chung";
+    }
+
     const state = {
       exams: loadJson(KEYS.EXAMS, []),
       history: loadJson(KEYS.HISTORY, {}),
@@ -1645,6 +1860,10 @@
       activeExamId: loadJson(KEYS.ACTIVE_ID, null),
       updatedAt: loadJson(KEYS.UPDATED_AT, new Date().toISOString()),
       selectedSubject: "All",
+      statusFilter: "all", // 'all' | 'not_started' | 'in_progress' | 'completed'
+      searchQuery: "",
+      collapsedChapters: {},
+      dragExamId: null,
       sidebarHiddenOnMobile: false,
       examCardCollapsed: false,
       currentIndex: 0,
@@ -1668,6 +1887,11 @@
       saveJson(KEYS.EXAMS, state.exams);
       saveJson(KEYS.SEEDED, true);
     }
+    state.exams = state.exams.map(ex => ({
+      ...ex,
+      subject: normalizeSubject(ex.subject),
+      chapter: inferChapter(ex)
+    }));
     if (!state.activeExamId || !state.exams.some(e => e.id === state.activeExamId)) {
       state.activeExamId = state.exams[0]?.id || null;
       saveJson(KEYS.ACTIVE_ID, state.activeExamId);
@@ -1678,7 +1902,11 @@
       const localCount = Array.isArray(state.exams) ? state.exams.length : 0;
       const snapExams = Array.isArray(snap?.exams) ? snap.exams : [];
       if (snapExams.length > 0 && (localCount === 0 || (!wasSeededBefore && localCount <= SAMPLE_EXAMS.length && snapExams.length > localCount) || snapExams.length > localCount)) {
-        state.exams = snapExams;
+        state.exams = snapExams.map(ex => ({
+          ...ex,
+          subject: normalizeSubject(ex.subject),
+          chapter: inferChapter(ex)
+        }));
         state.history = snap.history || state.history;
         state.notes = snap.notes || state.notes;
         state.updatedAt = snap.updated_at || state.updatedAt;
@@ -1729,10 +1957,11 @@
       if (!Array.isArray(raw.bai_tap) || raw.bai_tap.length === 0) {
         throw new Error("Thiếu phần 'bai_tap' (câu hỏi không đáp án).");
       }
-      return {
+      const normalized = {
         id: String(raw.id || "bai-" + Date.now()),
         title: String(raw.title || "Bài tập chưa đặt tên"),
         subject: normalizeSubject(raw.subject),
+        chapter: "",
         ly_thuyet: Array.isArray(raw.ly_thuyet) ? raw.ly_thuyet : [],
         bai_tap: raw.bai_tap.map((q, idx) => ({
           id: String(q.id || `q${idx + 1}`),
@@ -1761,6 +1990,8 @@
           ? raw.dap_an_giai_thich
           : {}
       };
+      normalized.chapter = inferChapter({ ...raw, subject: normalized.subject, title: normalized.title, id: normalized.id });
+      return normalized;
     }
 
     function addExamToLibrary(rawObj) {
@@ -1886,6 +2117,7 @@
       const trimmed = nextName.trim();
       if (!trimmed) return showToast("Tên đề không được để trống.");
       target.title = trimmed;
+      target.chapter = inferChapter(target);
       saveJson(KEYS.EXAMS, state.exams);
       state.updatedAt = touchUpdatedAt();
       renderAll();
@@ -1941,13 +2173,43 @@
       showToast(`Đã xóa: ${target.title}`);
     }
 
+    function getExamProgressStatus(examId) {
+      const hist = state.history[examId];
+      if (Array.isArray(hist) && hist.length > 0) return "completed";
+      const noteMap = state.notes[examId];
+      if (noteMap && typeof noteMap === "object" && Object.values(noteMap).some(v => String(v || "").trim().length > 0)) {
+        return "in_progress";
+      }
+      if (examId === state.activeExamId) {
+        const hasAns = Object.values(state.answers || {}).some(v =>
+          typeof v === "object" && v !== null ? Object.values(v).some(Boolean) : String(v || "").trim().length > 0
+        );
+        if (hasAns) return "in_progress";
+      }
+      return "not_started";
+    }
+
     function getCurrentExam() {
       return state.exams.find(e => e.id === state.activeExamId) || null;
     }
 
     function getFilteredExams() {
-      if (state.selectedSubject === "All") return state.exams;
-      return state.exams.filter(e => normalizeSubject(e.subject) === state.selectedSubject);
+      const q = state.searchQuery.trim().toLowerCase();
+      return state.exams.filter(e => {
+        if (state.selectedSubject !== "All" && normalizeSubject(e.subject) !== state.selectedSubject) {
+          return false;
+        }
+        if (state.statusFilter !== "all" && getExamProgressStatus(e.id) !== state.statusFilter) {
+          return false;
+        }
+        if (q) {
+          const chap = inferChapter(e).toLowerCase();
+          const title = String(e.title || "").toLowerCase();
+          const id = String(e.id || "").toLowerCase();
+          if (!title.includes(q) && !chap.includes(q) && !id.includes(q)) return false;
+        }
+        return true;
+      });
     }
 
     function getOrderedQuestions() {
@@ -2219,47 +2481,165 @@
       });
     }
 
+    function renderStatusFilters() {
+      document.querySelectorAll("#statusFilterRow .status-pill").forEach(btn => {
+        const f = btn.getAttribute("data-status-filter");
+        btn.classList.toggle("active", state.statusFilter === f);
+      });
+    }
+
+    function reorderExams(draggedId, targetId, insertAfter = false) {
+      if (!draggedId || !targetId || draggedId === targetId) return;
+      const fromIdx = state.exams.findIndex(e => e.id === draggedId);
+      const toIdx = state.exams.findIndex(e => e.id === targetId);
+      if (fromIdx < 0 || toIdx < 0) return;
+
+      const [moved] = state.exams.splice(fromIdx, 1);
+      const targetExam = state.exams.find(e => e.id === targetId);
+      if (targetExam && inferChapter(targetExam) !== inferChapter(moved)) {
+        moved.chapter = inferChapter(targetExam);
+      }
+
+      let nextIdx = state.exams.findIndex(e => e.id === targetId);
+      if (nextIdx < 0) nextIdx = state.exams.length;
+      if (insertAfter) nextIdx += 1;
+
+      state.exams.splice(nextIdx, 0, moved);
+      saveJson(KEYS.EXAMS, state.exams);
+      state.updatedAt = touchUpdatedAt();
+      renderExamList();
+      showToast("Đã cập nhật thứ tự đề!");
+    }
+
     function renderExamList() {
-      const listEl = document.getElementById("examList");
+      const groupsEl = document.getElementById("chapterGroupsContainer");
       const filtered = getFilteredExams();
       document.getElementById("examCountBadge").textContent = `${filtered.length} đề`;
-      listEl.innerHTML = "";
+      groupsEl.innerHTML = "";
 
       if (!filtered.length) {
-        listEl.innerHTML = `<div class="muted">Chưa có đề nào trong mục này.</div>`;
+        groupsEl.innerHTML = `<div class="muted">Không tìm thấy đề phù hợp bộ lọc.</div>`;
         return;
       }
 
+      // Group filtered exams by chapter while preserving order in state.exams
+      const chapterMap = new Map();
       filtered.forEach(ex => {
-        const atts = state.history[ex.id] || [];
-        const latest = atts.length ? `${atts[0].correctCount}/${atts[0].autoCount}` : "Chưa làm";
-        const imgCount = ex.bai_tap.reduce((sum, q) => {
-          const cnt = Array.isArray(q.images) ? q.images.filter(Boolean).length : (q.image ? 1 : 0);
-          return sum + cnt + (q.svg ? 1 : 0);
-        }, 0);
-        const imgTag = imgCount > 0 ? ` • ${imgCount} hình` : "";
-        const div = document.createElement("div");
-        div.className = "exam-item" + (ex.id === state.activeExamId ? " selected" : "");
-        div.innerHTML = `
-          <div class="exam-item-main">
-            <div class="exam-item-title">${escapeHtml(ex.title)}</div>
-            <div class="exam-item-meta">${escapeHtml(normalizeSubject(ex.subject))} • ${ex.bai_tap.length} câu${imgTag} • Gần nhất: ${latest}</div>
-          </div>
-          <div class="exam-item-actions">
-            <button type="button" class="icon-ghost btn-rename-item" title="Đổi tên đề">Sửa</button>
-            <button type="button" class="danger-ghost" title="Xóa đề này" aria-label="Xóa đề này">Xóa</button>
-          </div>
+        const chap = inferChapter(ex);
+        if (!chapterMap.has(chap)) chapterMap.set(chap, []);
+        chapterMap.get(chap).push(ex);
+      });
+
+      chapterMap.forEach((examsInChapter, chapterName) => {
+        const isCollapsed = !!state.collapsedChapters[chapterName];
+        const groupBox = document.createElement("div");
+        groupBox.className = "chapter-group";
+
+        const header = document.createElement("div");
+        header.className = "chapter-header";
+        header.innerHTML = `
+          <span class="chapter-header-title" title="${escapeAttr(chapterName)}">${isCollapsed ? "▸" : "▾"} ${escapeHtml(chapterName)}</span>
+          <span class="chapter-header-meta">${examsInChapter.length} đề</span>
         `;
-        div.onclick = () => selectExam(ex.id);
-        div.querySelector(".btn-rename-item").onclick = (ev) => {
-          ev.stopPropagation();
-          renameExam(ex.id);
+        header.onclick = () => {
+          state.collapsedChapters[chapterName] = !state.collapsedChapters[chapterName];
+          renderExamList();
         };
-        div.querySelector(".danger-ghost").onclick = (ev) => {
-          ev.stopPropagation();
-          deleteExam(ex.id);
-        };
-        listEl.appendChild(div);
+        groupBox.appendChild(header);
+
+        const listEl = document.createElement("div");
+        listEl.className = "exam-list";
+        if (isCollapsed) listEl.style.display = "none";
+
+        examsInChapter.forEach(ex => {
+          const atts = state.history[ex.id] || [];
+          const status = getExamProgressStatus(ex.id);
+          const statusLabel = status === "completed"
+            ? `${atts[0].correctCount}/${atts[0].autoCount}`
+            : (status === "in_progress" ? "Đang làm" : "Chưa làm");
+
+          const imgCount = ex.bai_tap.reduce((sum, q) => {
+            const cnt = Array.isArray(q.images) ? q.images.filter(Boolean).length : (q.image ? 1 : 0);
+            return sum + cnt + (q.svg ? 1 : 0);
+          }, 0);
+          const imgTag = imgCount > 0 ? ` • ${imgCount} hình` : "";
+
+          const div = document.createElement("div");
+          div.className = "exam-item" + (ex.id === state.activeExamId ? " selected" : "");
+          div.dataset.examId = ex.id;
+          div.innerHTML = `
+            <span class="drag-handle" title="Kéo thả để sắp xếp lại đề" aria-label="Kéo thả đề">⋮⋮</span>
+            <div class="exam-item-main">
+              <div class="exam-item-title">${escapeHtml(ex.title)}</div>
+              <div class="exam-item-meta">${escapeHtml(normalizeSubject(ex.subject))} • ${ex.bai_tap.length} câu${imgTag} • ${statusLabel}</div>
+            </div>
+            <div class="exam-item-actions">
+              <button type="button" class="icon-ghost btn-rename-item" title="Đổi tên đề">Sửa</button>
+              <button type="button" class="danger-ghost" title="Xóa đề này" aria-label="Xóa đề này">Xóa</button>
+            </div>
+          `;
+
+          const handle = div.querySelector(".drag-handle");
+          handle.addEventListener("mousedown", () => {
+            div.setAttribute("draggable", "true");
+          });
+          handle.addEventListener("mouseup", () => {
+            div.removeAttribute("draggable");
+          });
+
+          div.addEventListener("dragstart", (e) => {
+            state.dragExamId = ex.id;
+            div.classList.add("dragging");
+            if (e.dataTransfer) {
+              e.dataTransfer.effectAllowed = "move";
+              e.dataTransfer.setData("text/plain", ex.id);
+            }
+          });
+
+          div.addEventListener("dragover", (e) => {
+            const draggedId = state.dragExamId || e.dataTransfer?.getData("text/plain");
+            if (!draggedId || draggedId === ex.id) return;
+            e.preventDefault();
+            const rect = div.getBoundingClientRect();
+            const isAfter = e.clientY > rect.top + rect.height / 2;
+            div.classList.toggle("drag-over-top", !isAfter);
+            div.classList.toggle("drag-over-bottom", isAfter);
+          });
+
+          div.addEventListener("dragleave", () => {
+            div.classList.remove("drag-over-top", "drag-over-bottom");
+          });
+
+          div.addEventListener("drop", (e) => {
+            e.preventDefault();
+            const draggedId = state.dragExamId || e.dataTransfer?.getData("text/plain");
+            const rect = div.getBoundingClientRect();
+            const isAfter = e.clientY > rect.top + rect.height / 2;
+            div.classList.remove("drag-over-top", "drag-over-bottom");
+            state.dragExamId = null;
+            reorderExams(draggedId, ex.id, isAfter);
+          });
+
+          div.addEventListener("dragend", () => {
+            div.classList.remove("dragging", "drag-over-top", "drag-over-bottom");
+            div.removeAttribute("draggable");
+            state.dragExamId = null;
+          });
+
+          div.onclick = () => selectExam(ex.id);
+          div.querySelector(".btn-rename-item").onclick = (ev) => {
+            ev.stopPropagation();
+            renameExam(ex.id);
+          };
+          div.querySelector(".danger-ghost").onclick = (ev) => {
+            ev.stopPropagation();
+            deleteExam(ex.id);
+          };
+          listEl.appendChild(div);
+        });
+
+        groupBox.appendChild(listEl);
+        groupsEl.appendChild(groupBox);
       });
     }
 
@@ -2655,6 +3035,7 @@
     function renderAll() {
       applySidebarLayout();
       renderSubjectTabs();
+      renderStatusFilters();
       renderExamList();
       renderHistory();
       renderTheory();
@@ -2687,11 +3068,19 @@
       const examMap = new Map(state.exams.map(e => [e.id, e]));
       for (const incoming of data.exams) {
         if (!incoming || !incoming.id) continue;
-        const existing = examMap.get(incoming.id);
+        const normIncoming = {
+          ...incoming,
+          subject: normalizeSubject(incoming.subject),
+          chapter: inferChapter(incoming)
+        };
+        const existing = examMap.get(normIncoming.id);
         if (!existing) {
-          examMap.set(incoming.id, incoming);
-        } else if ((incoming.bai_tap?.length || 0) >= (existing.bai_tap?.length || 0)) {
-          examMap.set(incoming.id, incoming);
+          examMap.set(normIncoming.id, normIncoming);
+        } else if ((normIncoming.bai_tap?.length || 0) >= (existing.bai_tap?.length || 0)) {
+          examMap.set(normIncoming.id, {
+            ...normIncoming,
+            chapter: incoming.chapter || existing.chapter || inferChapter(normIncoming)
+          });
         }
       }
       state.exams = Array.from(examMap.values());
@@ -2919,6 +3308,34 @@
     document.getElementById("btnCollapseExamCard").onclick = () => {
       state.examCardCollapsed = !state.examCardCollapsed;
       applySidebarLayout();
+    };
+
+    document.getElementById("examSearchInput").addEventListener("input", (e) => {
+      state.searchQuery = e.target.value || "";
+      renderExamList();
+    });
+
+    document.querySelectorAll("#statusFilterRow .status-pill").forEach(btn => {
+      btn.onclick = () => {
+        state.statusFilter = btn.getAttribute("data-status-filter") || "all";
+        renderStatusFilters();
+        renderExamList();
+      };
+    });
+
+    document.getElementById("btnResetOrder").onclick = () => {
+      state.exams.sort((a, b) => {
+        const idxA = SAMPLE_EXAMS.findIndex(s => s.id === a.id);
+        const idxB = SAMPLE_EXAMS.findIndex(s => s.id === b.id);
+        if (idxA >= 0 && idxB >= 0) return idxA - idxB;
+        if (idxA >= 0) return -1;
+        if (idxB >= 0) return 1;
+        return String(a.id).localeCompare(String(b.id), undefined, { numeric: true });
+      });
+      saveJson(KEYS.EXAMS, state.exams);
+      state.updatedAt = touchUpdatedAt();
+      renderExamList();
+      showToast("Đã khôi phục thứ tự đề mặc định!");
     };
 
     function prepareImportModal({ isFile = false, parsedFileObj = null, fileName = "" } = {}) {
