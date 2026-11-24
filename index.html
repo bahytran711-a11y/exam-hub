@@ -30,7 +30,6 @@
       --radius: 12px;
     }
 
-    /* Custom Scrollbar (#23332B) */
     ::-webkit-scrollbar {
       width: 7px;
       height: 7px;
@@ -46,7 +45,6 @@
       background: #2f463b;
     }
 
-    /* Top 3px Progress Bar (Mộc -> Hỏa) */
     .top-progress-track {
       position: fixed;
       top: 0;
@@ -82,7 +80,6 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* HEADER & AMBIENT GLOW */
     header {
       position: sticky;
       top: 0;
@@ -238,12 +235,11 @@
     }
 
     button.active-pill {
-      background: var(--green);
-      color: #052e16;
-      border-color: var(--green);
+      background: var(--amber-dim);
+      color: var(--amber);
+      border-color: var(--amber);
     }
 
-    /* LAYOUT */
     .app-layout {
       max-width: 1240px;
       margin: 18px auto;
@@ -313,7 +309,6 @@
       border: 1px solid var(--green-border);
     }
 
-    /* MÔN HỌC & KHO ĐỀ */
     .subject-tabs {
       display: flex;
       flex-wrap: wrap;
@@ -391,7 +386,6 @@
       margin-top: 3px;
     }
 
-    /* TOOLBAR & ĐIỀU HƯỚNG CÂU */
     .toolbar {
       display: flex;
       flex-wrap: wrap;
@@ -488,7 +482,6 @@
       color: #86efac;
     }
 
-    /* LÝ THUYẾT & CÂU HỎI */
     .theory-box {
       background: var(--bg-elevated);
       border: 1px solid var(--border);
@@ -520,12 +513,65 @@
       font-weight: 600;
       margin-bottom: 14px;
       color: var(--ink);
+      white-space: normal;
     }
 
-    button.active-pill {
-      background: var(--amber-dim);
-      color: var(--amber);
-      border-color: var(--amber);
+    .q-media-wrap {
+      margin: 12px 0 16px;
+      padding: 10px;
+      border-radius: 11px;
+      background: rgba(13, 19, 16, 0.75);
+      border: 1px solid var(--border);
+      text-align: center;
+      position: relative;
+    }
+
+    .q-media-img {
+      max-width: 100%;
+      max-height: 360px;
+      border-radius: 8px;
+      cursor: zoom-in;
+      display: inline-block;
+      object-fit: contain;
+      background: #ffffff;
+      padding: 4px;
+      transition: transform 0.15s ease;
+    }
+
+    .q-media-img:hover {
+      transform: scale(1.01);
+    }
+
+    .q-media-actions {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    .img-paste-zone {
+      border: 1.5px dashed var(--green-border);
+      background: rgba(34, 197, 94, 0.05);
+      border-radius: 10px;
+      padding: 9px 13px;
+      margin-bottom: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      cursor: pointer;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
+      outline: none;
+    }
+
+    .img-paste-zone:hover,
+    .img-paste-zone:focus,
+    .img-paste-zone.dragover {
+      background: rgba(34, 197, 94, 0.14);
+      border-color: var(--green-bright);
     }
 
     .kbd-chip {
@@ -702,11 +748,10 @@
       }
     }
 
-    /* MODAL */
     .modal-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.7);
+      background: rgba(0, 0, 0, 0.76);
       display: none;
       align-items: center;
       justify-content: center;
@@ -722,12 +767,37 @@
       background: var(--card-bg);
       border: 1px solid var(--green-border);
       border-radius: 16px;
-      max-width: 540px;
+      max-width: 560px;
       width: 100%;
       max-height: 90vh;
       overflow-y: auto;
       padding: 20px;
       box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65);
+    }
+
+    .lightbox-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 10, 8, 0.9);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 80;
+      padding: 20px;
+      cursor: zoom-out;
+    }
+
+    .lightbox-backdrop.open {
+      display: flex;
+    }
+
+    .lightbox-backdrop img {
+      max-width: 95vw;
+      max-height: 92vh;
+      border-radius: 10px;
+      background: #ffffff;
+      padding: 6px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
     }
 
     .toast {
@@ -744,7 +814,7 @@
       opacity: 0;
       transform: translateY(8px);
       transition: opacity 0.16s ease, transform 0.16s ease;
-      z-index: 60;
+      z-index: 90;
       pointer-events: none;
     }
 
@@ -752,7 +822,7 @@
       opacity: 1;
       transform: translateY(0);
     }
-  
+
     .tf-list {
       display: flex;
       flex-direction: column;
@@ -828,7 +898,6 @@
       color: var(--muted);
     }
 
-  
     sub, sup {
       font-size: 0.74em;
       line-height: 0;
@@ -837,10 +906,6 @@
     }
     sup { top: -0.45em; }
     sub { bottom: -0.22em; }
-    .q-text {
-      white-space: normal;
-    }
-
 
     .exam-item-actions {
       display: flex;
@@ -922,6 +987,27 @@
       margin: 0;
     }
 
+    .batch-img-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--bg-elevated);
+      margin-bottom: 8px;
+    }
+
+    .batch-img-thumb {
+      width: 54px;
+      height: 42px;
+      object-fit: contain;
+      background: #fff;
+      border-radius: 6px;
+      padding: 2px;
+      flex-shrink: 0;
+    }
   </style>
 </head>
 <body>
@@ -946,6 +1032,9 @@
         <button type="button" class="nav-btn" id="btnPasteJson">
           <span>Dán JSON</span>
         </button>
+        <button type="button" class="nav-btn" id="btnBatchImages" title="Gắn nhiều hình ảnh nhanh vào các câu của đề hiện tại">
+          <span>Gắn ảnh hàng loạt</span>
+        </button>
         <button type="button" class="nav-btn primary-pill" id="btnOpenGist">
           <span>Đồng bộ Gist</span>
         </button>
@@ -954,7 +1043,6 @@
   </header>
 
   <main class="app-layout" id="appLayout">
-    <!-- CỘT TRÁI -->
     <aside class="sidebar-col">
       <div class="card">
         <div class="card-title">
@@ -978,7 +1066,6 @@
       </div>
     </aside>
 
-    <!-- CỘT PHẢI -->
     <section>
       <div class="card">
         <div class="toolbar">
@@ -1030,14 +1117,13 @@
 
         <div class="nav-footer">
           <button type="button" class="secondary" id="btnPrevQ">← Câu trước</button>
-          <span class="muted" id="shortcutHint">Phím tắt: <span class="kbd-chip">A–D</span> chọn đáp án • <span class="kbd-chip">←</span> / <span class="kbd-chip">→</span> chuyển câu</span>
+          <span class="muted" id="shortcutHint">Phím tắt: <span class="kbd-chip">A–D</span> chọn đáp án • <span class="kbd-chip">←</span> / <span class="kbd-chip">→</span> chuyển câu • <span class="kbd-chip">Ctrl+V</span> dán ảnh vào câu</span>
           <button type="button" class="secondary" id="btnNextQ">Câu tiếp →</button>
         </div>
       </div>
     </section>
   </main>
 
-  <!-- MODAL NẠP / DÁN JSON (TẠO MỚI HOẶC CỘNG DỒN) -->
   <div class="modal-backdrop" id="pasteModal">
     <div class="modal">
       <div class="card-title">
@@ -1061,7 +1147,7 @@
       </div>
 
       <div id="pasteTextareaWrap">
-        <p class="muted" style="margin-top:0;">Thứ tự chuẩn: <code>ly_thuyet</code> → <code>bai_tap</code> → <code>dap_an_giai_thich</code>.</p>
+        <p class="muted" style="margin-top:0;">Thứ tự chuẩn: <code>ly_thuyet</code> → <code>bai_tap</code> (hỗ trợ <code>image</code> / <code>svg</code>) → <code>dap_an_giai_thich</code>.</p>
         <textarea id="pasteJsonTextarea" rows="9" placeholder='{"id":"ly-01","title":"...","subject":"Lý","ly_thuyet":[],"bai_tap":[...],"dap_an_giai_thich":{...}}'></textarea>
       </div>
 
@@ -1074,7 +1160,33 @@
     </div>
   </div>
 
-  <!-- MODAL ĐỒNG BỘ GIST (2 THÔNG TIN) -->
+  <div class="modal-backdrop" id="batchImgModal">
+    <div class="modal">
+      <div class="card-title">
+        <span>Gắn hình ảnh nhanh cho đề</span>
+        <button type="button" class="secondary" style="padding:4px 9px;" onclick="closeModal('batchImgModal')">✕</button>
+      </div>
+      <p class="muted" style="margin-top:0;">
+        Chọn nhiều file ảnh cùng lúc (hoặc đặt tên file chứa số câu như <code>cau1.png</code>, <code>q3.jpg</code> để tự khớp câu), hoặc dán ảnh lần lượt cho từng câu. Ảnh được tự động nén nhẹ (~40–80KB) để đồng bộ Gist mượt.
+      </p>
+
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
+        <label class="nav-btn primary-pill" style="margin:0; border-radius:10px;">
+          <span>+ Chọn nhiều file ảnh</span>
+          <input type="file" id="batchImageFilesInput" accept="image/*" multiple hidden />
+        </label>
+        <button type="button" class="secondary" id="btnAutoMapByFilename" title="Tự ghép ảnh vào câu nếu tên file có số (vd: cau2.png -> Câu 2)">Tự khớp theo tên file</button>
+      </div>
+
+      <div id="batchImgList" style="max-height:360px; overflow-y:auto;"></div>
+
+      <div style="margin-top:14px; display:flex; justify-content:flex-end; gap:8px;">
+        <button type="button" class="secondary" onclick="closeModal('batchImgModal')">Đóng</button>
+        <button type="button" id="btnSaveBatchImages">Lưu tất cả ảnh vào đề</button>
+      </div>
+    </div>
+  </div>
+
   <div class="modal-backdrop" id="gistModal">
     <div class="modal">
       <div class="card-title">
@@ -1082,7 +1194,7 @@
         <button type="button" class="secondary" style="padding:4px 9px;" onclick="closeModal('gistModal')">✕</button>
       </div>
       <p class="muted">
-        Nhập <b>GitHub Personal Access Token</b> và <b>GitHub Gist ID</b> để đồng bộ kho đề, lịch sử làm bài, câu sai và ghi chú.
+        Nhập <b>GitHub Personal Access Token</b> và <b>GitHub Gist ID</b> để đồng bộ kho đề (bao gồm cả hình ảnh đã nhúng), lịch sử làm bài, câu sai và ghi chú.
       </p>
       <div style="margin-bottom:12px;">
         <label class="muted" style="display:block; margin-bottom:5px;"><b>GitHub Personal Access Token:</b></label>
@@ -1114,6 +1226,10 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <div class="lightbox-backdrop" id="imgLightbox" onclick="this.classList.remove('open')">
+    <img id="imgLightboxTarget" src="" alt="Hình minh họa phóng to" />
   </div>
 
   <div class="toast" id="toast"></div>
@@ -1263,11 +1379,14 @@
     function saveJson(key, val) {
       try {
         localStorage.setItem(key, JSON.stringify(val));
-      } catch {}
+      } catch (err) {
+        if (key === KEYS.EXAMS) {
+          showToast("Lưu ý: Dung lượng ảnh lớn, đã ưu tiên lưu vào kho IndexedDB & Gist!");
+        }
+      }
       scheduleIdbMirror();
     }
 
-    // Tự động quét & kế thừa dữ liệu từ mọi phiên bản cũ nếu có trong localStorage
     function migrateLegacyStorage() {
       const suffixMap = [
         ["exams", KEYS.EXAMS, Array.isArray],
@@ -1303,7 +1422,6 @@
 
     migrateLegacyStorage();
 
-    // Sao lưu dự phòng song song vào IndexedDB để luôn giữ nguyên dữ liệu qua mọi lần update file
     const IDB_NAME = "ExamHubPersistentVault";
     const IDB_STORE = "vault";
     const IDB_RECORD_KEY = "latest_snapshot";
@@ -1374,6 +1492,47 @@
       return ts;
     }
 
+    function compressImageToBase64(fileOrBlob, { maxWidth = 960, maxHeight = 760, quality = 0.8 } = {}) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => reject(new Error("Không đọc được file ảnh."));
+        reader.onload = () => {
+          const img = new Image();
+          img.onerror = () => reject(new Error("File ảnh không hợp lệ."));
+          img.onload = () => {
+            let { width, height } = img;
+            const ratio = Math.min(1, maxWidth / width, maxHeight / height);
+            const targetW = Math.round(width * ratio);
+            const targetH = Math.round(height * ratio);
+
+            const canvas = document.createElement("canvas");
+            canvas.width = targetW;
+            canvas.height = targetH;
+            const ctx = canvas.getContext("2d");
+            ctx.fillStyle = "#FFFFFF";
+            ctx.fillRect(0, 0, targetW, targetH);
+            ctx.drawImage(img, 0, 0, targetW, targetH);
+
+            let dataUrl = canvas.toDataURL("image/webp", quality);
+            if (!dataUrl.startsWith("data:image/webp")) {
+              dataUrl = canvas.toDataURL("image/jpeg", quality);
+            }
+            resolve(dataUrl);
+          };
+          img.src = reader.result;
+        };
+        reader.readAsDataURL(fileOrBlob);
+      });
+    }
+
+    function openImageLightbox(src) {
+      if (!src) return;
+      const lb = document.getElementById("imgLightbox");
+      const target = document.getElementById("imgLightboxTarget");
+      target.src = src;
+      lb.classList.add("open");
+    }
+
     const state = {
       exams: loadJson(KEYS.EXAMS, []),
       history: loadJson(KEYS.HISTORY, {}),
@@ -1394,7 +1553,8 @@
       lastGrading: null,
       showTheory: false,
       filterMode: "all",
-      pendingFileJson: null
+      pendingFileJson: null,
+      batchDraftImages: {}
     };
 
     const wasSeededBefore = loadJson(KEYS.SEEDED, false);
@@ -1408,12 +1568,11 @@
       saveJson(KEYS.ACTIVE_ID, state.activeExamId);
     }
 
-    // Đồng bộ 2 chiều với kho IndexedDB khi mở trang (không bao giờ ghi đè mất dữ liệu cũ)
     (async function hydrateFromPersistentVault() {
       const snap = await readVaultSnapshot();
       const localCount = Array.isArray(state.exams) ? state.exams.length : 0;
       const snapExams = Array.isArray(snap?.exams) ? snap.exams : [];
-      if (snapExams.length > 0 && (localCount === 0 || (!wasSeededBefore && localCount <= SAMPLE_EXAMS.length && snapExams.length > localCount))) {
+      if (snapExams.length > 0 && (localCount === 0 || (!wasSeededBefore && localCount <= SAMPLE_EXAMS.length && snapExams.length > localCount) || snapExams.length > localCount)) {
         state.exams = snapExams;
         state.history = snap.history || state.history;
         state.notes = snap.notes || state.notes;
@@ -1440,7 +1599,7 @@
       el.textContent = msg;
       el.classList.add("show");
       clearTimeout(showToast._t);
-      showToast._t = setTimeout(() => el.classList.remove("show"), 2400);
+      showToast._t = setTimeout(() => el.classList.remove("show"), 2600);
     }
 
     function openModal(id) {
@@ -1474,7 +1633,16 @@
           id: String(q.id || `q${idx + 1}`),
           type: q.type || (Array.isArray(q.items) ? "true_false" : (Array.isArray(q.options) ? "mcq" : "essay")),
           question: String(q.question || ""),
-		  svg: String(q.svg || ""),
+          svg: String(q.svg || ""),
+          images: (() => {
+            const rawImgs = Array.isArray(q.images) ? q.images : (q.image || q.img ? [q.image || q.img] : []);
+            return rawImgs.map(x => String(x || "").trim()).filter(Boolean);
+          })(),
+          image: (() => {
+            const rawImgs = Array.isArray(q.images) ? q.images : (q.image || q.img ? [q.image || q.img] : []);
+            const clean = rawImgs.map(x => String(x || "").trim()).filter(Boolean);
+            return clean[0] || "";
+          })(),
           options: Array.isArray(q.options) ? q.options : [],
           items: Array.isArray(q.items) && q.items.length
             ? q.items.map((it, j) => ({
@@ -1539,6 +1707,70 @@
       state.selectedSubject = "All";
       selectExam(target.id);
       showToast(`Đã cộng dồn +${addedCount} câu vào "${target.title}"!`);
+    }
+
+    function getQuestionImages(q) {
+      if (!q) return [];
+      if (Array.isArray(q.images)) {
+        q.images = q.images.map(x => String(x || "").trim()).filter(Boolean);
+        return q.images;
+      }
+      if (q.image) {
+        q.images = [String(q.image).trim()];
+        return q.images;
+      }
+      q.images = [];
+      return q.images;
+    }
+
+    function attachImageToQuestion(examId, questionId, base64DataUrl) {
+      if (!base64DataUrl) return;
+      const exam = state.exams.find(e => e.id === examId);
+      if (!exam) return;
+      const q = exam.bai_tap.find(item => item.id === questionId);
+      if (!q) return;
+      const imgs = getQuestionImages(q);
+      imgs.push(base64DataUrl);
+      q.images = imgs;
+      q.image = imgs[0] || "";
+      saveJson(KEYS.EXAMS, state.exams);
+      state.updatedAt = touchUpdatedAt();
+      renderQuestionArea();
+      renderQuestionNav();
+    }
+
+    function removeImageFromQuestion(examId, questionId, imgIndex) {
+      const exam = state.exams.find(e => e.id === examId);
+      if (!exam) return;
+      const q = exam.bai_tap.find(item => item.id === questionId);
+      if (!q) return;
+      const imgs = getQuestionImages(q);
+      if (imgIndex >= 0 && imgIndex < imgs.length) {
+        imgs.splice(imgIndex, 1);
+      }
+      q.images = imgs;
+      q.image = imgs[0] || "";
+      saveJson(KEYS.EXAMS, state.exams);
+      state.updatedAt = touchUpdatedAt();
+      renderQuestionArea();
+      renderQuestionNav();
+      renderExamList();
+    }
+
+    async function handleImageFileForCurrentQuestion(file) {
+      const exam = getCurrentExam();
+      const qs = getOrderedQuestions();
+      const q = qs[state.currentIndex];
+      if (!exam || !q) return showToast("Hãy chọn một câu hỏi trước nha.");
+      try {
+        const b64 = await compressImageToBase64(file);
+        attachImageToQuestion(exam.id, q.id, b64);
+        renderExamList();
+        const qNum = getDisplayNumber(exam, q.id);
+        showToast(`Đã thêm ảnh vào Câu ${qNum} (${q.images.length} ảnh)!`);
+      } catch (err) {
+        showToast(err.message || "Lỗi xử lý ảnh.");
+      }
     }
 
     function renameExam(examId) {
@@ -1671,7 +1903,6 @@
       }
     }
 
-    
     function normalizeTfChoice(val) {
       if (val === true) return "Đúng";
       if (val === false) return "Sai";
@@ -1897,12 +2128,17 @@
       filtered.forEach(ex => {
         const atts = state.history[ex.id] || [];
         const latest = atts.length ? `${atts[0].correctCount}/${atts[0].autoCount}` : "Chưa làm";
+        const imgCount = ex.bai_tap.reduce((sum, q) => {
+          const cnt = Array.isArray(q.images) ? q.images.filter(Boolean).length : (q.image ? 1 : 0);
+          return sum + cnt + (q.svg ? 1 : 0);
+        }, 0);
+        const imgTag = imgCount > 0 ? ` • ${imgCount} hình` : "";
         const div = document.createElement("div");
         div.className = "exam-item" + (ex.id === state.activeExamId ? " selected" : "");
         div.innerHTML = `
           <div class="exam-item-main">
             <div class="exam-item-title">${escapeHtml(ex.title)}</div>
-            <div class="exam-item-meta">${escapeHtml(normalizeSubject(ex.subject))} • ${ex.bai_tap.length} câu • Gần nhất: ${latest}</div>
+            <div class="exam-item-meta">${escapeHtml(normalizeSubject(ex.subject))} • ${ex.bai_tap.length} câu${imgTag} • Gần nhất: ${latest}</div>
           </div>
           <div class="exam-item-actions">
             <button type="button" class="icon-ghost btn-rename-item" title="Đổi tên đề">Sửa</button>
@@ -2132,30 +2368,120 @@
       }
 
       const noteVal = (state.notes[exam.id] || {})[q.id] || "";
+      const qImages = getQuestionImages(q);
+      const hasImage = qImages.length > 0;
+      const solImage = sol && (sol.image || sol.img) ? String(sol.image || sol.img) : "";
 
       area.innerHTML = `
-        <div class="question-box">
+        <div class="question-box" id="activeQuestionCard">
           <div class="q-header">
             <span class="badge">Câu ${qNum} (${state.currentIndex + 1}/${qs.length})</span>
-            <button type="button" class="secondary ${isFlagged ? "active-pill" : ""}" id="btnFlagQ">
-              ${isFlagged ? "Đã gắn cờ" : "Gắn cờ"}
-            </button>
+            <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+              <label class="secondary" style="padding:5px 10px; font-size:0.8rem; border-radius:9px; cursor:pointer; display:inline-flex; align-items:center; gap:5px; border:1px solid var(--border); background:var(--card-bg-2); color:var(--ink);">
+                <span>${hasImage ? "+ Thêm ảnh" : "+ Ảnh"}</span>
+                <input type="file" id="qInlineImageInput" accept="image/*" multiple hidden />
+              </label>
+              <button type="button" class="secondary ${isFlagged ? "active-pill" : ""}" id="btnFlagQ" style="padding:5px 10px; font-size:0.8rem;">
+                ${isFlagged ? "Đã gắn cờ" : "Gắn cờ"}
+              </button>
+            </div>
           </div>
+
           <div class="q-text">${formatScientificHtml(q.question)}</div>
-		  ${q.svg ? `<div style="margin: 12px 0; text-align: center; overflow-x: auto;">${q.svg}</div>` : ""}
+
+          ${q.svg ? `<div style="margin: 12px 0; text-align: center; overflow-x: auto;">${q.svg}</div>` : ""}
+
+          ${hasImage ? `
+            <div class="q-media-wrap">
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:10px; align-items:center;">
+                ${qImages.map((src, i) => `
+                  <div style="border:1px solid var(--border); border-radius:9px; padding:8px; background:rgba(21,31,26,0.75);">
+                    <img src="${escapeAttr(src)}" class="q-media-img q-multi-img" data-img-src="${escapeAttr(src)}" alt="Hình ${i + 1} câu ${qNum}" title="Bấm vào ảnh để phóng to" />
+                    <div class="q-media-actions" style="margin-top:6px;">
+                      <span class="muted" style="font-size:0.75rem;">Ảnh #${i + 1}</span>
+                      <button type="button" class="danger-ghost btn-remove-one-img" data-img-idx="${i}">Xóa ảnh #${i + 1}</button>
+                    </div>
+                  </div>
+                `).join("")}
+              </div>
+              <div class="q-media-actions" style="margin-top:10px;">
+                <span class="muted" style="font-size:0.76rem;">Đang có <b>${qImages.length}</b> ảnh • Nhấn <span class="kbd-chip">Ctrl+V</span> hoặc kéo thả để thêm ảnh</span>
+              </div>
+            </div>
+          ` : ""}
+
+          <div class="img-paste-zone" id="qPasteZone" tabindex="0" title="Bấm vào đây rồi nhấn Ctrl+V để dán ảnh, hoặc kéo thả file ảnh">
+            <span class="muted" style="font-size:0.8rem;">
+              ${hasImage ? `Thêm ảnh khác cho Câu ${qNum}:` : `Chưa có ảnh minh họa •`} Nhấn <span class="kbd-chip">Ctrl+V</span> để dán ảnh hoặc kéo thả vào đây
+            </span>
+            <span class="badge" style="font-size:0.72rem;">+ Dán / Kéo ảnh</span>
+          </div>
+
           ${inputHtml}
+
           ${showSol ? `
             <div class="explanation-box">
               <div><b>Đáp án:</b> ${formatScientificHtml(sol.answer || "—")}</div>
               <div style="margin-top:4px;"><b>Giải thích chi tiết:</b> ${formatScientificHtml(sol.explanation || "Chưa có giải thích.")}</div>
+              ${solImage ? `
+                <div class="q-media-wrap" style="margin-top:10px; margin-bottom:0;">
+                  <img src="${escapeAttr(solImage)}" class="q-media-img" onclick="openImageLightbox(this.src)" alt="Hình giải thích" />
+                </div>
+              ` : ""}
             </div>
           ` : ""}
+
           <div class="note-box">
             <label class="muted"><b>Ghi chú lỗi sai:</b></label>
             <input type="text" id="noteInput" value="${escapeAttr(noteVal)}" placeholder="Ghi lại lý do sai hoặc lưu ý..." style="margin-top:6px;" />
           </div>
         </div>
       `;
+
+      const pasteZone = document.getElementById("qPasteZone");
+      if (pasteZone) {
+        pasteZone.onclick = () => {
+          document.getElementById("qInlineImageInput")?.click();
+        };
+        pasteZone.addEventListener("dragover", (ev) => {
+          ev.preventDefault();
+          pasteZone.classList.add("dragover");
+        });
+        pasteZone.addEventListener("dragleave", () => {
+          pasteZone.classList.remove("dragover");
+        });
+        pasteZone.addEventListener("drop", async (ev) => {
+          ev.preventDefault();
+          pasteZone.classList.remove("dragover");
+          const files = Array.from(ev.dataTransfer?.files || []).filter(f => f.type.startsWith("image/"));
+          for (const file of files) {
+            await handleImageFileForCurrentQuestion(file);
+          }
+        });
+      }
+
+      const inlineImgInput = document.getElementById("qInlineImageInput");
+      if (inlineImgInput) {
+        inlineImgInput.onchange = async (ev) => {
+          const files = Array.from(ev.target.files || []);
+          for (const file of files) {
+            await handleImageFileForCurrentQuestion(file);
+          }
+          ev.target.value = "";
+        };
+      }
+
+      area.querySelectorAll(".q-multi-img").forEach(imgEl => {
+        imgEl.onclick = () => openImageLightbox(imgEl.getAttribute("data-img-src"));
+      });
+
+      area.querySelectorAll(".btn-remove-one-img").forEach(btn => {
+        btn.onclick = () => {
+          const imgIdx = parseInt(btn.getAttribute("data-img-idx"), 10);
+          removeImageFromQuestion(exam.id, q.id, imgIdx);
+          showToast(`Đã xóa ảnh #${imgIdx + 1} của Câu ${qNum}.`);
+        };
+      });
 
       area.querySelectorAll(".tf-btn").forEach(btn => {
         btn.onclick = () => {
@@ -2231,9 +2557,6 @@
       renderQuestionArea();
     }
 
-    // =========================================================================
-    // ĐỒNG BỘ GITHUB GIST (2 THÔNG TIN)
-    // =========================================================================
     function getGistConfig() {
       return loadJson(KEYS.GIST_CFG, { token: "", gistId: "" });
     }
@@ -2317,7 +2640,12 @@
       const gistJson = await res.json();
       const fileObj = gistJson.files?.[GIST_FILENAME] || Object.values(gistJson.files || {})[0];
       if (!fileObj?.content) throw new Error("Không tìm thấy dữ liệu trong Gist.");
-      applySyncPayload(JSON.parse(fileObj.content));
+      let rawText = fileObj.content;
+      if (fileObj.truncated && fileObj.raw_url) {
+        const rawRes = await fetch(fileObj.raw_url);
+        if (rawRes.ok) rawText = await rawRes.text();
+      }
+      applySyncPayload(JSON.parse(rawText));
       showToast("Đã kéo dữ liệu từ Gist về!");
     }
 
@@ -2341,9 +2669,143 @@
       showToast("Đã đẩy dữ liệu lên Gist!");
     }
 
-    // =========================================================================
-    // SỰ KIỆN
-    // =========================================================================
+    function renderBatchImagesModal() {
+      const exam = getCurrentExam();
+      const listEl = document.getElementById("batchImgList");
+      if (!exam) {
+        listEl.innerHTML = `<p class="muted">Chưa chọn đề nào.</p>`;
+        return;
+      }
+      listEl.innerHTML = exam.bai_tap.map((q, idx) => {
+        const qNum = idx + 1;
+        const preview = state.batchDraftImages[q.id] !== undefined ? state.batchDraftImages[q.id] : (q.image || "");
+        const snippet = String(q.question || "").replace(/\s+/g, " ").slice(0, 68);
+        return `
+          <div class="batch-img-item" data-qid="${escapeAttr(q.id)}">
+            <div style="min-width:0; flex:1;">
+              <div style="font-size:0.86rem; font-weight:700; color:var(--ink);">Câu ${qNum} <span class="muted">(${escapeHtml(q.id)})</span></div>
+              <div class="muted" style="font-size:0.78rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(snippet)}</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
+              ${preview ? `<img src="${escapeAttr(preview)}" class="batch-img-thumb" onclick="openImageLightbox(this.src)" />` : `<span class="muted" style="font-size:0.75rem;">Chưa có ảnh</span>`}
+              <label class="secondary" style="padding:5px 9px; font-size:0.78rem; border-radius:8px; cursor:pointer; border:1px solid var(--border); background:var(--card-bg-2); color:var(--ink);">
+                <span>Chọn</span>
+                <input type="file" accept="image/*" class="batch-single-file" data-qid="${escapeAttr(q.id)}" hidden />
+              </label>
+              ${preview ? `<button type="button" class="danger-ghost batch-clear-btn" data-qid="${escapeAttr(q.id)}">Xóa</button>` : ""}
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      listEl.querySelectorAll(".batch-single-file").forEach(inp => {
+        inp.onchange = async (ev) => {
+          const f = ev.target.files?.[0];
+          const qid = inp.getAttribute("data-qid");
+          if (!f || !qid) return;
+          try {
+            state.batchDraftImages[qid] = await compressImageToBase64(f);
+            renderBatchImagesModal();
+          } catch (err) {
+            showToast(err.message || "Lỗi đọc ảnh.");
+          }
+        };
+      });
+
+      listEl.querySelectorAll(".batch-clear-btn").forEach(btn => {
+        btn.onclick = () => {
+          const qid = btn.getAttribute("data-qid");
+          state.batchDraftImages[qid] = "";
+          renderBatchImagesModal();
+        };
+      });
+    }
+
+    document.getElementById("btnBatchImages").onclick = () => {
+      const exam = getCurrentExam();
+      if (!exam) return showToast("Hãy chọn một đề trước nha.");
+      state.batchDraftImages = {};
+      renderBatchImagesModal();
+      openModal("batchImgModal");
+    };
+
+    document.getElementById("batchImageFilesInput").onchange = async (ev) => {
+      const exam = getCurrentExam();
+      const files = Array.from(ev.target.files || []);
+      if (!exam || !files.length) return;
+
+      files.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: "base" }));
+
+      let mappedCount = 0;
+      for (let i = 0; i < files.length; i++) {
+        const f = files[i];
+        const b64 = await compressImageToBase64(f);
+        const matchNum = f.name.match(/(?:cau|câu|q|bai|bài)?\s*(\d+)/i);
+        let targetQ = null;
+        if (matchNum) {
+          const num = parseInt(matchNum[1], 10);
+          if (num >= 1 && num <= exam.bai_tap.length) {
+            targetQ = exam.bai_tap[num - 1];
+          }
+        }
+        if (!targetQ && i < exam.bai_tap.length) {
+          targetQ = exam.bai_tap[i];
+        }
+        if (targetQ) {
+          state.batchDraftImages[targetQ.id] = b64;
+          mappedCount += 1;
+        }
+      }
+      renderBatchImagesModal();
+      showToast(`Đã nạp & tự khớp ${mappedCount} ảnh!`);
+      ev.target.value = "";
+    };
+
+    document.getElementById("btnAutoMapByFilename").onclick = () => {
+      document.getElementById("batchImageFilesInput").click();
+    };
+
+    document.getElementById("btnSaveBatchImages").onclick = () => {
+      const exam = getCurrentExam();
+      if (!exam) return;
+      let changed = 0;
+      for (const [qid, val] of Object.entries(state.batchDraftImages)) {
+        const q = exam.bai_tap.find(item => item.id === qid);
+        if (q) {
+          const arr = Array.isArray(val) ? val.filter(Boolean) : (val ? [val] : []);
+          q.images = arr;
+          q.image = arr[0] || "";
+          changed += 1;
+        }
+      }
+      if (changed > 0) {
+        saveJson(KEYS.EXAMS, state.exams);
+        state.updatedAt = touchUpdatedAt();
+        renderExamList();
+        renderQuestionArea();
+        showToast(`Đã lưu cập nhật ảnh cho ${changed} câu!`);
+      }
+      closeModal("batchImgModal");
+    };
+
+    document.addEventListener("paste", async (e) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+
+      let imageFile = null;
+      for (const item of items) {
+        if (item.type && item.type.startsWith("image/")) {
+          imageFile = item.getAsFile();
+          break;
+        }
+      }
+      if (!imageFile) return;
+      if (document.getElementById("gistModal").classList.contains("open")) return;
+
+      e.preventDefault();
+      await handleImageFileForCurrentQuestion(imageFile);
+    });
+
     document.getElementById("btnToggleSidebar").onclick = () => {
       state.sidebarHiddenOnMobile = !state.sidebarHiddenOnMobile;
       applySidebarLayout();
@@ -2647,6 +3109,9 @@
     };
 
     document.addEventListener("keydown", e => {
+      if (e.key === "Escape") {
+        document.getElementById("imgLightbox").classList.remove("open");
+      }
       if (document.querySelector(".modal-backdrop.open")) return;
       const tag = document.activeElement?.tagName;
       if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
@@ -2679,17 +3144,12 @@
         .replace(/"/g, "&quot;");
     }
 
-
     function formatScientificHtml(str) {
       let s = escapeHtml(str ?? "");
-      // Tách phần đầu "Câu số." (kèm nguồn trong ngoặc nếu có) xuống 1 dòng riêng
       s = s.replace(/^(Câu\s+\d+[\.:]?\s*(?:\([^)]*\)|\[[^\]]*\])?[\.:]?)\s+/i, "$1<br>");
-      // Chuyển ký tự xuống dòng thành <br>
       s = s.replace(/\r?\n/g, "<br>");
-      // Chỉ số dưới phổ biến trong Vật lý / Toán: L_c, L_m, t_nc, t_s, c_đá, c_nước, c_Cu, c_Fe, R_td, t0, t1, t2, tx, τ1, τ2, m1, m2
       s = s.replace(/\b([LtcmRτ])_([a-zA-Z0-9đáướcCuFe]+)\b/g, "$1<sub>$2</sub>");
       s = s.replace(/\b(t|τ|m)([012x])\b/g, "$1<sub>$2</sub>");
-      // Số mũ dạng 10^5, 10^3, 10^6, x^2
       s = s.replace(/([0-9a-zA-Z\)\]]+)\^([+-]?[0-9a-zA-Z]+)/g, "$1<sup>$2</sup>");
       return s;
     }
